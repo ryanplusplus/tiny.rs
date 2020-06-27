@@ -105,6 +105,27 @@ impl<'a, T> LinkedList<'a, T> {
             },
         }
     }
+
+    pub fn for_each<F: FnMut(&T) -> bool>(&self, mut f: F) {
+        match self.head {
+            None => return,
+            Some(head) => unsafe {
+                let mut current = Some(head);
+
+                loop {
+                    if !f(current.unwrap().value()) {
+                        break;
+                    };
+
+                    if (*(&current.unwrap().next).get()).is_none() {
+                        break;
+                    }
+
+                    current = *(&current.unwrap().next).get();
+                }
+            },
+        }
+    }
 }
 
 #[cfg(test)]
