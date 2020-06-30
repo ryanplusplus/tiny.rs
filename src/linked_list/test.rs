@@ -23,12 +23,15 @@ fn should_push_back() {
     let mut list = LinkedList::new();
     let node1: LinkedListNode<u8> = LinkedListNode::new(21);
     let node2: LinkedListNode<u8> = LinkedListNode::new(42);
+    let node3: LinkedListNode<u8> = LinkedListNode::new(84);
 
     list.push_back(&node1);
     list.push_back(&node2);
+    list.push_back(&node3);
 
     assert_eq!(&21, list.pop_front().unwrap().value());
     assert_eq!(&42, list.pop_front().unwrap().value());
+    assert_eq!(&84, list.pop_front().unwrap().value());
     assert!(list.pop_front().is_none());
 }
 
