@@ -28,22 +28,17 @@ impl<'a, T> LinkedList<'a, T> {
     }
 
     pub fn push_front(&mut self, node: &'a LinkedListNode<'a, T>) {
-        match self.head {
-            None => self.head = Some(node),
-            Some(head) => {
-                node.next.replace(Some(head));
-                self.head = Some(node);
-            }
-        };
+        if let Some(head) = self.head {
+            node.next.replace(Some(head));
+        }
+        self.head = Some(node);
     }
 
     pub fn push_back(&mut self, node: &'a LinkedListNode<'a, T>) {
         match self.head {
             None => self.head = Some(node),
-            Some(head) => {
-                let mut current = head;
-
-                while let Some(next) = head.next.get() {
+            Some(mut current) => {
+                while let Some(next) = current.next.get() {
                     current = next;
                 }
 
@@ -55,12 +50,9 @@ impl<'a, T> LinkedList<'a, T> {
     pub fn pop_front(&mut self) -> Option<&'a LinkedListNode<'a, T>> {
         let popped = self.head;
 
-        match self.head {
-            None => (),
-            Some(head) => {
-                self.head = head.next.get();
-            }
-        };
+        if let Some(head) = self.head {
+            self.head = head.next.get();
+        }
 
         popped
     }
@@ -69,21 +61,17 @@ impl<'a, T> LinkedList<'a, T> {
         match self.head {
             None => None,
             Some(head) => {
-                if let Some(head_next) = head.next.get() {
+                if let Some(mut current) = head.next.get() {
                     let mut previous = head;
-                    let mut current = head_next;
 
                     while let Some(next) = current.next.get() {
                         previous = current;
                         current = next;
                     }
 
-                    previous.next.replace(None);
-                    Some(current)
+                    previous.next.replace(None)
                 } else {
-                    let popped = self.head;
-                    self.head = None;
-                    popped
+                    self.head.take()
                 }
             }
         }
