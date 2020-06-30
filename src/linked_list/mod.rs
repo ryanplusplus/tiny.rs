@@ -41,13 +41,13 @@ impl<'a, T> LinkedList<'a, T> {
         match self.head {
             None => self.head = Some(node),
             Some(head) => {
-                let mut current = Some(head);
+                let mut current = head;
 
-                while (current.unwrap().next).get().is_some() {
-                    current = (current.unwrap().next).get();
+                while let Some(next) = head.next.get() {
+                    current = next;
                 }
 
-                current.unwrap().next.replace(Some(node));
+                current.next.replace(Some(node));
             }
         };
     }
@@ -69,17 +69,17 @@ impl<'a, T> LinkedList<'a, T> {
         match self.head {
             None => None,
             Some(head) => {
-                if head.next.get().is_some() {
-                    let mut previous = None;
-                    let mut current = Some(head);
+                if let Some(head_next) = head.next.get() {
+                    let mut previous = head;
+                    let mut current = head_next;
 
-                    while current.unwrap().next.get().is_some() {
+                    while let Some(next) = current.next.get() {
                         previous = current;
-                        current = current.unwrap().next.get();
+                        current = next;
                     }
 
-                    previous.unwrap().next.replace(None);
-                    current
+                    previous.next.replace(None);
+                    Some(current)
                 } else {
                     let popped = self.head;
                     self.head = None;
@@ -93,12 +93,12 @@ impl<'a, T> LinkedList<'a, T> {
         match self.head {
             None => 0,
             Some(head) => {
-                let mut current = Some(head);
+                let mut current = head;
                 let mut count = 1;
 
-                while current.unwrap().next.get().is_some() {
+                while let Some(next) = current.next.get() {
                     count += 1;
-                    current = current.unwrap().next.get();
+                    current = next;
                 }
 
                 count
@@ -110,18 +110,18 @@ impl<'a, T> LinkedList<'a, T> {
         match self.head {
             None => return,
             Some(head) => {
-                let mut current = Some(head);
+                let mut current = head;
 
                 loop {
-                    if !f(current.unwrap().value()) {
-                        break;
-                    };
-
-                    if current.unwrap().next.get().is_none() {
+                    if !f(current.value()) {
                         break;
                     }
 
-                    current = current.unwrap().next.get();
+                    if let Some(next) = current.next.get() {
+                        current = next;
+                    } else {
+                        break;
+                    }
                 }
             }
         }
