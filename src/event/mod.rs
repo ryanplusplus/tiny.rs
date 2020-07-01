@@ -1,6 +1,8 @@
-use super::linked_list::LinkedList;
-use super::linked_list::LinkedListNode;
+use super::linked_list::{LinkedList, LinkedListNode};
 use core::marker::PhantomData;
+
+#[cfg(test)]
+mod test;
 
 type EventSubscription<'a, F> = LinkedListNode<'a, F>;
 
@@ -28,6 +30,3 @@ impl<'a, T, F: Fn(&T)> Event<'a, T, F> {
         });
     }
 }
-
-#[cfg(test)]
-mod test;

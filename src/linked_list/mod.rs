@@ -1,5 +1,8 @@
 use core::cell::Cell;
 
+#[cfg(test)]
+mod test;
+
 pub struct LinkedListNode<'a, T> {
     next: Cell<Option<&'a LinkedListNode<'a, T>>>,
     value: T,
@@ -115,6 +118,3 @@ impl<'a, T> LinkedList<'a, T> {
         }
     }
 }
-
-#[cfg(test)]
-mod test;

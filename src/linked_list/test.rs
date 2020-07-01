@@ -1,8 +1,6 @@
 extern crate std;
+use super::{LinkedList, LinkedListNode};
 use std::vec;
-
-use super::LinkedList;
-use super::LinkedListNode;
 
 #[test]
 fn should_push_and_pop_front() {

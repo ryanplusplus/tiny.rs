@@ -1,5 +1,4 @@
-use super::Event;
-use super::EventSubscription;
+use super::{Event, EventSubscription};
 use core::cell::Cell;
 
 #[test]
