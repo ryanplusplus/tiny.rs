@@ -4,7 +4,7 @@ use core::marker::PhantomData;
 #[cfg(test)]
 mod test;
 
-type EventSubscription<'a, F> = LinkedListNode<'a, F>;
+pub type EventSubscription<'a, F> = LinkedListNode<'a, F>;
 
 pub struct Event<'a, T, F: Fn(&T)> {
     subscribers: LinkedList<'a, F>,

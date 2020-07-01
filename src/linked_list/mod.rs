@@ -5,7 +5,7 @@ mod test;
 
 pub struct LinkedListNode<'a, T> {
     next: Cell<Option<&'a LinkedListNode<'a, T>>>,
-    value: T,
+    pub value: T,
 }
 
 pub struct LinkedList<'a, T> {
