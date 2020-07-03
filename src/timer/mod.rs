@@ -1,51 +1,70 @@
-use super::linked_list::{LinkedList, LinkedListNode};
-use core::cell::Cell;
-use core::cell::RefCell;
-
 #[cfg(test)]
 mod test;
 
-pub struct TimerData<F: Fn()> {
-    remaining_ticks: Cell<u32>,
-    callback: RefCell<Option<F>>,
+extern crate alloc;
+
+use alloc::boxed::Box;
+use alloc::vec;
+use alloc::vec::Vec;
+use core::cell::Cell;
+use core::cell::RefCell;
+
+#[derive(Clone, Copy)]
+pub struct Timer {
+    id: u16,
 }
 
-impl<F: Fn()> TimerData<F> {
-    fn new() -> Self {
+impl Timer {
+    fn new(id: u16) -> Self {
+        Self { id }
+    }
+}
+
+struct TimerState<'a> {
+    timer: Timer,
+    remaining_ticks: u32,
+    callback: Box<dyn Fn() + 'a>,
+}
+
+impl<'a> TimerState<'a> {
+    pub fn new(timer: Timer, remaining_ticks: u32, callback: impl Fn() + 'a) -> Self {
         Self {
-            remaining_ticks: Cell::new(0),
-            callback: RefCell::new(None),
+            timer,
+            remaining_ticks,
+            callback: Box::new(callback),
         }
     }
 }
 
-type Timer<'a, F> = LinkedListNode<'a, TimerData<F>>;
-
-pub struct TimerGroup<'a, F: Fn()> {
-    timers: LinkedList<'a, TimerData<F>>,
+pub struct TimerGroup<'a> {
+    timers: RefCell<Vec<TimerState<'a>>>,
+    current_id: Cell<u16>,
 }
 
-impl<'a, F: Fn()> TimerGroup<'a, F> {
-    pub fn new_timer() -> Timer<'a, F> {
-        LinkedListNode::new(TimerData::new())
-    }
-
+impl<'a> TimerGroup<'a> {
     pub fn new() -> Self {
         Self {
-            timers: LinkedList::new(),
+            timers: RefCell::new(vec![]),
+            current_id: Cell::new(0),
         }
     }
 
-    pub fn start(&mut self, timer: &'a Timer<'a, F>, callback: F) {
-        timer.value.callback.replace(Some(callback));
-        timer.value.remaining_ticks.replace(0);
-        self.timers.push_back(timer);
+    pub fn new_timer(&self) -> Timer {
+        let id = self.current_id.get();
+        self.current_id.replace(self.current_id.get() + 1);
+        Timer::new(id)
+    }
+
+    pub fn start(&self, timer: Timer, ticks: u32, callback: impl Fn() + 'a) {
+        // remove any matching
+
+        let timer_state = TimerState::new(timer, ticks, callback);
+        self.timers.borrow_mut().push(timer_state);
     }
 
     pub fn run(&mut self) {
-        self.timers.for_each(|timer_data| {
-            (timer_data.callback.borrow().as_ref().unwrap())();
-            true
-        })
+        for timer in self.timers.borrow().iter() {
+            (timer.callback)();
+        }
     }
 }

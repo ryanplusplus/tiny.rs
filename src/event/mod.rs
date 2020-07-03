@@ -1,32 +1,30 @@
-use super::linked_list::{LinkedList, LinkedListNode};
-use core::marker::PhantomData;
-
 #[cfg(test)]
 mod test;
 
-pub type EventSubscription<'a, F> = LinkedListNode<'a, F>;
+extern crate alloc;
 
-pub struct Event<'a, T, F: Fn(&T)> {
-    subscribers: LinkedList<'a, F>,
-    phantom: PhantomData<T>,
+use alloc::boxed::Box;
+use alloc::vec;
+use alloc::vec::Vec;
+
+pub struct Event<'a, T> {
+    subscribers: Vec<Box<dyn Fn(&T) + 'a>>,
 }
 
-impl<'a, T, F: Fn(&T)> Event<'a, T, F> {
+impl<'a, T> Event<'a, T> {
     pub fn new() -> Self {
         Self {
-            subscribers: LinkedList::new(),
-            phantom: PhantomData,
+            subscribers: vec![],
         }
     }
 
-    pub fn subscribe(&mut self, subscription: &'a EventSubscription<'a, F>) {
-        self.subscribers.push_front(subscription);
+    pub fn subscribe(&mut self, f: impl Fn(&T) + 'a) {
+        self.subscribers.push(Box::new(f));
     }
 
     pub fn publish(&mut self, t: &T) {
-        self.subscribers.for_each(|subscriber| {
+        for subscriber in &self.subscribers {
             subscriber(t);
-            true
-        });
+        }
     }
 }
