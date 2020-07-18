@@ -1,20 +1,27 @@
-use super::{Event, EventSubscription};
+use super::Event;
 use core::cell::Cell;
 
 #[test]
 fn should() {
-    let sum: Cell<u8> = Cell::new(0);
+    let sum1: Cell<u8> = Cell::new(0);
+    let sum2: Cell<u16> = Cell::new(3);
 
-    let sub = EventSubscription::new(|x: &u8| {
+    let sub1 = Event::new_subscription(&sum1, |sum: &Cell<u8>, x: &u8| {
         sum.replace(sum.get() + *x);
     });
 
-    let mut event: Event<u8, _> = Event::new();
+    let sub2 = Event::new_subscription(&sum2, |sum: &Cell<u16>, x: &u8| {
+        sum.replace(sum.get() + *x as u16);
+    });
 
-    event.subscribe(&sub);
+    let mut event: Event<u8> = Event::new();
+
+    event.subscribe(&sub1);
+    event.subscribe(&sub2);
 
     event.publish(&3);
     event.publish(&4);
 
-    assert_eq!(7, sum.get());
+    assert_eq!(7, sum1.get());
+    assert_eq!(10, sum2.get());
 }

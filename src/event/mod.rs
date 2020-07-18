@@ -1,31 +1,43 @@
 use super::linked_list::{LinkedList, LinkedListNode};
-use core::marker::PhantomData;
 
 #[cfg(test)]
 mod test;
 
-pub type EventSubscription<'a, F> = LinkedListNode<'a, F>;
-
-pub struct Event<'a, T, F: Fn(&T)> {
-    subscribers: LinkedList<'a, F>,
-    phantom: PhantomData<T>,
+pub struct EventSubscriptionState<Args> {
+    context: *const (),
+    f: fn(*const (), &Args),
 }
 
-impl<'a, T, F: Fn(&T)> Event<'a, T, F> {
+pub type EventSubscription<'a, Args> = LinkedListNode<'a, EventSubscriptionState<Args>>;
+
+pub struct Event<'a, Args> {
+    subscribers: LinkedList<'a, EventSubscriptionState<Args>>,
+}
+
+impl<'a, Args> Event<'a, Args> {
     pub fn new() -> Self {
         Self {
             subscribers: LinkedList::new(),
-            phantom: PhantomData,
         }
     }
 
-    pub fn subscribe(&mut self, subscription: &'a EventSubscription<'a, F>) {
+    pub fn new_subscription<Context>(
+        context: &'a Context,
+        f: fn(&Context, &Args),
+    ) -> EventSubscription<'a, Args> {
+        EventSubscription::new(EventSubscriptionState {
+            context: unsafe { core::intrinsics::transmute(context) },
+            f: unsafe { core::intrinsics::transmute(f) },
+        })
+    }
+
+    pub fn subscribe(&mut self, subscription: &'a EventSubscription<'a, Args>) {
         self.subscribers.push_front(subscription);
     }
 
-    pub fn publish(&mut self, t: &T) {
+    pub fn publish(&mut self, args: &Args) {
         self.subscribers.for_each(|subscriber| {
-            subscriber(t);
+            (subscriber.f)(subscriber.context, args);
             true
         });
     }

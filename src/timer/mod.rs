@@ -1,32 +1,33 @@
 use super::linked_list::{LinkedList, LinkedListNode};
 use core::cell::Cell;
-use core::cell::RefCell;
 
 #[cfg(test)]
 mod test;
 
-pub struct TimerData<F: Fn()> {
+pub struct TimerData {
     remaining_ticks: Cell<u32>,
-    callback: RefCell<Option<F>>,
+    context: Cell<Option<*const ()>>,
+    callback: Cell<Option<fn(*const ())>>,
 }
 
-impl<F: Fn()> TimerData<F> {
+impl TimerData {
     fn new() -> Self {
         Self {
             remaining_ticks: Cell::new(0),
-            callback: RefCell::new(None),
+            context: Cell::new(None),
+            callback: Cell::new(None),
         }
     }
 }
 
-type Timer<'a, F> = LinkedListNode<'a, TimerData<F>>;
+type Timer<'a> = LinkedListNode<'a, TimerData>;
 
-pub struct TimerGroup<'a, F: Fn()> {
-    timers: LinkedList<'a, TimerData<F>>,
+pub struct TimerGroup<'a> {
+    timers: LinkedList<'a, TimerData>,
 }
 
-impl<'a, F: Fn()> TimerGroup<'a, F> {
-    pub fn new_timer() -> Timer<'a, F> {
+impl<'a> TimerGroup<'a> {
+    pub fn new_timer() -> Timer<'a> {
         LinkedListNode::new(TimerData::new())
     }
 
@@ -36,15 +37,28 @@ impl<'a, F: Fn()> TimerGroup<'a, F> {
         }
     }
 
-    pub fn start(&mut self, timer: &'a Timer<'a, F>, callback: F) {
-        timer.value.callback.replace(Some(callback));
+    pub fn start<Context>(
+        &mut self,
+        timer: &'a Timer<'a>,
+        context: &Context,
+        callback: fn(context: &Context),
+    ) {
         timer.value.remaining_ticks.replace(0);
+        timer
+            .value
+            .context
+            .replace(Some(unsafe { core::intrinsics::transmute(context) }));
+        timer
+            .value
+            .callback
+            .replace(Some(unsafe { core::intrinsics::transmute(callback) }));
+
         self.timers.push_back(timer);
     }
 
     pub fn run(&mut self) {
         self.timers.for_each(|timer_data| {
-            (timer_data.callback.borrow().as_ref().unwrap())();
+            (timer_data.callback.get().unwrap())(timer_data.context.get().unwrap());
             true
         })
     }
