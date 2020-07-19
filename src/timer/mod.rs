@@ -53,9 +53,11 @@ impl<'a> TimerGroup<'a> {
 
     pub fn run(&mut self) {
         for timer_data in self.timers.iter() {
-            if let Some(callback) = timer_data.callback.get() {
-                callback.call();
-            }
+            timer_data
+                .callback
+                .get()
+                .expect("Trying to call an empty Timer Callback")
+                .call();
         }
     }
 }
