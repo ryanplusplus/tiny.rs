@@ -11,7 +11,7 @@ macro_rules! make_callback {
 
         impl<'life, $($($Arg,)*)*$($Ret)*> $Name<'life, $($($Arg,)*)*$($Ret)*> {
             #[inline]
-            pub fn make<Context>(context: &'life Context, callback: fn(&Context, $($(&$Arg,)*)*) $(-> $Ret)*) -> Self {
+            pub fn new<Context>(context: &'life Context, callback: fn(&Context, $($(&$Arg,)*)*) $(-> $Ret)*) -> Self {
                 Self {
                     context: unsafe { ::core::intrinsics::transmute(context) },
                     callback: unsafe { ::core::intrinsics::transmute(callback) },

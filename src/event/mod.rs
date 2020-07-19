@@ -20,7 +20,7 @@ impl<'a, Arg> Event<'a, Arg> {
         context: &'a Context,
         f: fn(&Context, &Arg),
     ) -> EventSubscription<'a, Arg> {
-        EventSubscription::new(EventSubscriptionState::make(context, f))
+        EventSubscription::new(EventSubscriptionState::new(context, f))
     }
 
     pub fn subscribe(&mut self, subscription: &'a EventSubscription<'a, Arg>) {

@@ -46,7 +46,7 @@ impl<'a> TimerGroup<'a> {
         timer
             .value
             .callback
-            .replace(Some(Callback::make(context, callback)));
+            .replace(Some(Callback::new(context, callback)));
 
         self.timers.push_back(timer);
     }
