@@ -82,6 +82,30 @@ impl<'a, T> LinkedList<'a, T> {
         }
     }
 
+    pub fn remove(&mut self, node: &'a LinkedListNode<'a, T>) {
+        if let Some(head) = self.head {
+            if core::ptr::eq(head, node) {
+                self.head = node.next.get();
+                return;
+            }
+
+            let mut current = head;
+
+            loop {
+                if let Some(next) = current.next.get() {
+                    if core::ptr::eq(next, node) {
+                        current.next.replace(next.next.get());
+                        return;
+                    }
+
+                    current = next;
+                } else {
+                    return;
+                }
+            }
+        }
+    }
+
     pub fn count(&self) -> usize {
         match self.head {
             None => 0,
