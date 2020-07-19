@@ -24,7 +24,12 @@ impl<'a, Arg> Event<'a, Arg> {
     }
 
     pub fn subscribe(&mut self, subscription: &'a EventSubscription<'a, Arg>) {
+        self.unsubscribe(subscription);
         self.subscribers.push_front(subscription);
+    }
+
+    pub fn unsubscribe(&mut self, subscription: &'a EventSubscription<'a, Arg>) {
+        self.subscribers.remove(subscription);
     }
 
     pub fn publish(&mut self, args: &Arg) {

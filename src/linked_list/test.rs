@@ -47,6 +47,60 @@ fn should_pop_back() {
 }
 
 #[test]
+fn should_remove_from_front() {
+    let mut list = LinkedList::new();
+    let node1: LinkedListNode<u8> = LinkedListNode::new(21);
+    let node2: LinkedListNode<u8> = LinkedListNode::new(42);
+    let node3: LinkedListNode<u8> = LinkedListNode::new(63);
+
+    list.push_back(&node1);
+    list.push_back(&node2);
+    list.push_back(&node3);
+
+    list.remove(&node1);
+
+    assert_eq!(&42, list.pop_front().unwrap().value());
+    assert_eq!(&63, list.pop_front().unwrap().value());
+    assert!(list.pop_front().is_none());
+}
+
+#[test]
+fn should_remove_from_middle() {
+    let mut list = LinkedList::new();
+    let node1: LinkedListNode<u8> = LinkedListNode::new(21);
+    let node2: LinkedListNode<u8> = LinkedListNode::new(42);
+    let node3: LinkedListNode<u8> = LinkedListNode::new(63);
+
+    list.push_back(&node1);
+    list.push_back(&node2);
+    list.push_back(&node3);
+
+    list.remove(&node2);
+
+    assert_eq!(&21, list.pop_front().unwrap().value());
+    assert_eq!(&63, list.pop_front().unwrap().value());
+    assert!(list.pop_front().is_none());
+}
+
+#[test]
+fn should_remove_from_back() {
+    let mut list = LinkedList::new();
+    let node1: LinkedListNode<u8> = LinkedListNode::new(21);
+    let node2: LinkedListNode<u8> = LinkedListNode::new(42);
+    let node3: LinkedListNode<u8> = LinkedListNode::new(63);
+
+    list.push_back(&node1);
+    list.push_back(&node2);
+    list.push_back(&node3);
+
+    list.remove(&node3);
+
+    assert_eq!(&21, list.pop_front().unwrap().value());
+    assert_eq!(&42, list.pop_front().unwrap().value());
+    assert!(list.pop_front().is_none());
+}
+
+#[test]
 fn should_count() {
     let mut list = LinkedList::new();
     let node1: LinkedListNode<u8> = LinkedListNode::new(21);
