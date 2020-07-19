@@ -1,29 +1,28 @@
+use super::callback::Callback;
 use super::linked_list::{LinkedList, LinkedListNode};
 use core::cell::Cell;
 
 #[cfg(test)]
 mod test;
 
-pub struct TimerData {
+pub struct TimerData<'a> {
     remaining_ticks: Cell<u32>,
-    context: Cell<Option<*const ()>>,
-    callback: Cell<Option<fn(*const ())>>,
+    callback: Cell<Option<Callback<'a>>>,
 }
 
-impl TimerData {
+impl TimerData<'_> {
     fn new() -> Self {
         Self {
             remaining_ticks: Cell::new(0),
-            context: Cell::new(None),
             callback: Cell::new(None),
         }
     }
 }
 
-type Timer<'a> = LinkedListNode<'a, TimerData>;
+type Timer<'a> = LinkedListNode<'a, TimerData<'a>>;
 
 pub struct TimerGroup<'a> {
-    timers: LinkedList<'a, TimerData>,
+    timers: LinkedList<'a, TimerData<'a>>,
 }
 
 impl<'a> TimerGroup<'a> {
@@ -40,25 +39,23 @@ impl<'a> TimerGroup<'a> {
     pub fn start<Context>(
         &mut self,
         timer: &'a Timer<'a>,
-        context: &Context,
+        context: &'a Context,
         callback: fn(context: &Context),
     ) {
         timer.value.remaining_ticks.replace(0);
         timer
             .value
-            .context
-            .replace(Some(unsafe { core::intrinsics::transmute(context) }));
-        timer
-            .value
             .callback
-            .replace(Some(unsafe { core::intrinsics::transmute(callback) }));
+            .replace(Some(Callback::make(context, callback)));
 
         self.timers.push_back(timer);
     }
 
     pub fn run(&mut self) {
         for timer_data in self.timers.iter() {
-            (timer_data.callback.get().unwrap())(timer_data.context.get().unwrap());
+            if let Some(callback) = timer_data.callback.get() {
+                callback.call();
+            }
         }
     }
 }

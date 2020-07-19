@@ -1,20 +1,15 @@
+use super::callback::CallbackWith1Argument as EventSubscriptionState;
 use super::linked_list::{LinkedList, LinkedListNode};
-
 #[cfg(test)]
 mod test;
 
-pub struct EventSubscriptionState<Args> {
-    context: *const (),
-    f: fn(*const (), &Args),
+pub type EventSubscription<'a, Arg> = LinkedListNode<'a, EventSubscriptionState<'a, Arg>>;
+
+pub struct Event<'a, Arg> {
+    subscribers: LinkedList<'a, EventSubscriptionState<'a, Arg>>,
 }
 
-pub type EventSubscription<'a, Args> = LinkedListNode<'a, EventSubscriptionState<Args>>;
-
-pub struct Event<'a, Args> {
-    subscribers: LinkedList<'a, EventSubscriptionState<Args>>,
-}
-
-impl<'a, Args> Event<'a, Args> {
+impl<'a, Arg> Event<'a, Arg> {
     pub fn new() -> Self {
         Self {
             subscribers: LinkedList::new(),
@@ -23,21 +18,18 @@ impl<'a, Args> Event<'a, Args> {
 
     pub fn new_subscription<Context>(
         context: &'a Context,
-        f: fn(&Context, &Args),
-    ) -> EventSubscription<'a, Args> {
-        EventSubscription::new(EventSubscriptionState {
-            context: unsafe { core::intrinsics::transmute(context) },
-            f: unsafe { core::intrinsics::transmute(f) },
-        })
+        f: fn(&Context, &Arg),
+    ) -> EventSubscription<'a, Arg> {
+        EventSubscription::new(EventSubscriptionState::make(context, f))
     }
 
-    pub fn subscribe(&mut self, subscription: &'a EventSubscription<'a, Args>) {
+    pub fn subscribe(&mut self, subscription: &'a EventSubscription<'a, Arg>) {
         self.subscribers.push_front(subscription);
     }
 
-    pub fn publish(&mut self, args: &Args) {
+    pub fn publish(&mut self, args: &Arg) {
         for subscriber in self.subscribers.iter() {
-            (subscriber.f)(subscriber.context, args);
+            subscriber.call(args);
         }
     }
 }
