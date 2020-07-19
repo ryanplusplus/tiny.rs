@@ -57,9 +57,8 @@ impl<'a> TimerGroup<'a> {
     }
 
     pub fn run(&mut self) {
-        self.timers.for_each(|timer_data| {
+        for timer_data in self.timers.iter() {
             (timer_data.callback.get().unwrap())(timer_data.context.get().unwrap());
-            true
-        })
+        }
     }
 }

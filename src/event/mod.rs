@@ -36,9 +36,8 @@ impl<'a, Args> Event<'a, Args> {
     }
 
     pub fn publish(&mut self, args: &Args) {
-        self.subscribers.for_each(|subscriber| {
+        for subscriber in self.subscribers.iter() {
             (subscriber.f)(subscriber.context, args);
-            true
-        });
+        }
     }
 }

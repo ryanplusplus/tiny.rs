@@ -1,6 +1,5 @@
 extern crate std;
 use super::{LinkedList, LinkedListNode};
-use std::vec;
 
 #[test]
 fn should_push_and_pop_front() {
@@ -69,37 +68,15 @@ fn should_count() {
 }
 
 #[test]
-fn should_for_each() {
+fn should_be_iterable() {
     let mut list = LinkedList::new();
     let node1: LinkedListNode<u8> = LinkedListNode::new(21);
     let node2: LinkedListNode<u8> = LinkedListNode::new(42);
     list.push_back(&node1);
     list.push_back(&node2);
 
-    let mut eached = vec![];
-
-    list.for_each(|x| {
-        eached.push(*x);
-        true
-    });
-
-    assert_eq!(vec![21, 42], eached);
-}
-
-#[test]
-fn should_abort_for_each_early() {
-    let mut list = LinkedList::new();
-    let node1: LinkedListNode<u8> = LinkedListNode::new(21);
-    let node2: LinkedListNode<u8> = LinkedListNode::new(42);
-    list.push_back(&node1);
-    list.push_back(&node2);
-
-    let mut eached = vec![];
-
-    list.for_each(|x| {
-        eached.push(*x);
-        false
-    });
-
-    assert_eq!(vec![21], eached);
+    let mut iter = list.iter();
+    assert_eq!(iter.next(), Some(&21));
+    assert_eq!(iter.next(), Some(&42));
+    assert_eq!(iter.next(), None);
 }

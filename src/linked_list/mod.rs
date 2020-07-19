@@ -1,5 +1,7 @@
 use core::cell::Cell;
 
+mod iter;
+
 #[cfg(test)]
 mod test;
 
@@ -93,27 +95,6 @@ impl<'a, T> LinkedList<'a, T> {
                 }
 
                 count
-            }
-        }
-    }
-
-    pub fn for_each<F: FnMut(&T) -> bool>(&self, mut f: F) {
-        match self.head {
-            None => return,
-            Some(head) => {
-                let mut current = head;
-
-                loop {
-                    if !f(current.value()) {
-                        break;
-                    }
-
-                    if let Some(next) = current.next.get() {
-                        current = next;
-                    } else {
-                        break;
-                    }
-                }
             }
         }
     }
