@@ -91,17 +91,13 @@ impl<'a, T> LinkedList<'a, T> {
 
             let mut current = head;
 
-            loop {
-                if let Some(next) = current.next.get() {
-                    if core::ptr::eq(next, node) {
-                        current.next.replace(next.next.get());
-                        return;
-                    }
-
-                    current = next;
-                } else {
+            while let Some(next) = current.next.get() {
+                if core::ptr::eq(next, node) {
+                    current.next.replace(next.next.get());
                     return;
                 }
+
+                current = next;
             }
         }
     }
