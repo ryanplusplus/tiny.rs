@@ -50,10 +50,8 @@ impl<'a> TimerGroup<'a> {
         context: &'a Context,
         callback: fn(context: &Context),
     ) {
-        timer.remaining_ticks.replace(ticks);
-        timer
-            .callback
-            .replace(Some(Callback::new(context, callback)));
+        timer.remaining_ticks.set(ticks);
+        timer.callback.set(Some(Callback::new(context, callback)));
 
         self.timers.push_back(timer);
     }
@@ -73,9 +71,9 @@ impl<'a> TimerGroup<'a> {
             .map(|timer| (timer, timer.remaining_ticks.get()))
         {
             if remaining_ticks > delta_ticks {
-                timer.remaining_ticks.replace(remaining_ticks - delta_ticks);
+                timer.remaining_ticks.set(remaining_ticks - delta_ticks);
             } else {
-                timer.remaining_ticks.replace(0);
+                timer.remaining_ticks.set(0);
 
                 timer
                     .callback

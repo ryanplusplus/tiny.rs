@@ -14,7 +14,7 @@ impl FakeTimeSource {
     }
 
     fn tick(&self, ticks: Ticks) {
-        self.ticks.replace(self.ticks.get() + ticks);
+        self.ticks.set(self.ticks.get() + ticks);
     }
 }
 
@@ -33,7 +33,7 @@ fn should_run_a_single_timer() {
     let timer = TimerGroup::new_timer();
 
     timer_group.start(&timer, 11, &ran, |ran| {
-        ran.replace(true);
+        ran.set(true);
     });
 
     timer_group.run();
@@ -62,11 +62,11 @@ fn should_run_multiple_timers() {
     let timer2 = TimerGroup::new_timer();
 
     timer_group.start(&timer1, 5, &ran1, |ran| {
-        ran.replace(true);
+        ran.set(true);
     });
 
     timer_group.start(&timer2, 11, &ran2, |ran| {
-        ran.replace(true);
+        ran.set(true);
     });
 
     timer_group.run();
@@ -115,11 +115,11 @@ fn should_prevent_starvation() {
     let timer2 = TimerGroup::new_timer();
 
     timer_group.start(&timer1, 5, &ran1, |ran| {
-        ran.replace(true);
+        ran.set(true);
     });
 
     timer_group.start(&timer2, 11, &ran2, |ran| {
-        ran.replace(true);
+        ran.set(true);
     });
 
     timer_group.run();

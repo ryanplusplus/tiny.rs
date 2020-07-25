@@ -13,10 +13,10 @@ fn should_publish_to_all_subscribers() {
     let sub2_data: Cell<Option<u8>> = Cell::new(None);
 
     let sub1 = Event::new_subscription(&sub1_data, |data, x| {
-        data.replace(Some(*x));
+        data.set(Some(*x));
     });
     let sub2 = Event::new_subscription(&sub2_data, |data, x| {
-        data.replace(Some(*x));
+        data.set(Some(*x));
     });
 
     let mut event: Event<u8> = Event::new();
@@ -36,10 +36,10 @@ fn should_not_publish_subscribers_that_have_unsubscribed() {
     let sub2_data: Cell<Option<u8>> = Cell::new(None);
 
     let sub1 = Event::new_subscription(&sub1_data, |data, x| {
-        data.replace(Some(*x));
+        data.set(Some(*x));
     });
     let sub2 = Event::new_subscription(&sub2_data, |data, x| {
-        data.replace(Some(*x));
+        data.set(Some(*x));
     });
 
     let mut event: Event<u8> = Event::new();
@@ -60,10 +60,10 @@ fn should_allow_subscribers_to_resubscribe() {
     let sub2_data: Cell<u8> = Cell::new(0);
 
     let sub1 = Event::new_subscription(&sub1_data, |data, x| {
-        data.replace(data.get() + *x);
+        data.set(data.get() + *x);
     });
     let sub2 = Event::new_subscription(&sub2_data, |data, x| {
-        data.replace(data.get() + *x);
+        data.set(data.get() + *x);
     });
 
     let mut event: Event<u8> = Event::new();

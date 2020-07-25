@@ -47,7 +47,7 @@ impl<'a, T> LinkedList<'a, T> {
 
     pub fn push_front(&mut self, node: &'a LinkedListNode<'a, T>) {
         if let Some(head) = self.head {
-            node.next.replace(Some(head));
+            node.next.set(Some(head));
         }
         self.head = Some(node);
     }
@@ -60,7 +60,7 @@ impl<'a, T> LinkedList<'a, T> {
                     current = next;
                 }
 
-                current.next.replace(Some(node));
+                current.next.set(Some(node));
             }
         };
     }
@@ -106,7 +106,7 @@ impl<'a, T> LinkedList<'a, T> {
 
             while let Some(next) = current.next.get() {
                 if core::ptr::eq(next, node) {
-                    current.next.replace(next.next.get());
+                    current.next.set(next.next.get());
                     return;
                 }
 
