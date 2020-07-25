@@ -13,10 +13,6 @@ pub struct LinkedListNode<'a, T> {
     pub value: T,
 }
 
-pub struct LinkedList<'a, T> {
-    head: Option<&'a LinkedListNode<'a, T>>,
-}
-
 impl<T> LinkedListNode<'_, T> {
     pub const fn new(value: T) -> Self {
         Self {
@@ -40,21 +36,27 @@ impl<T> DerefMut for LinkedListNode<'_, T> {
     }
 }
 
+pub struct LinkedList<'a, T> {
+    head: Cell<Option<&'a LinkedListNode<'a, T>>>,
+}
+
 impl<'a, T> LinkedList<'a, T> {
     pub const fn new() -> Self {
-        Self { head: None }
+        Self {
+            head: Cell::new(None),
+        }
     }
 
-    pub fn push_front(&mut self, node: &'a LinkedListNode<'a, T>) {
-        if let Some(head) = self.head {
+    pub fn push_front(&self, node: &'a LinkedListNode<'a, T>) {
+        if let Some(head) = self.head.take() {
             node.next.set(Some(head));
         }
-        self.head = Some(node);
+        self.head.set(Some(node));
     }
 
-    pub fn push_back(&mut self, node: &'a LinkedListNode<'a, T>) {
-        match self.head {
-            None => self.head = Some(node),
+    pub fn push_back(&self, node: &'a LinkedListNode<'a, T>) {
+        match self.head.get() {
+            None => self.head.set(Some(node)),
             Some(mut current) => {
                 while let Some(next) = current.next.get() {
                     current = next;
@@ -62,21 +64,21 @@ impl<'a, T> LinkedList<'a, T> {
 
                 current.next.set(Some(node));
             }
-        };
-    }
-
-    pub fn pop_front(&mut self) -> Option<&'a LinkedListNode<'a, T>> {
-        let popped = self.head;
-
-        if let Some(head) = self.head {
-            self.head = head.next.get();
         }
-
-        popped
     }
 
-    pub fn pop_back(&mut self) -> Option<&'a LinkedListNode<'a, T>> {
-        match self.head {
+    pub fn pop_front(&self) -> Option<&'a LinkedListNode<'a, T>> {
+        match self.head.take() {
+            None => None,
+            Some(head) => {
+                self.head.set(head.next.get());
+                Some(head)
+            }
+        }
+    }
+
+    pub fn pop_back(&self) -> Option<&'a LinkedListNode<'a, T>> {
+        match self.head.get() {
             None => None,
             Some(head) => {
                 if let Some(mut current) = head.next.get() {
@@ -87,7 +89,7 @@ impl<'a, T> LinkedList<'a, T> {
                         current = next;
                     }
 
-                    previous.next.replace(None)
+                    previous.next.take()
                 } else {
                     self.head.take()
                 }
@@ -95,10 +97,10 @@ impl<'a, T> LinkedList<'a, T> {
         }
     }
 
-    pub fn remove(&mut self, node: &'a LinkedListNode<'a, T>) {
-        if let Some(head) = self.head {
+    pub fn remove(&self, node: &'a LinkedListNode<'a, T>) {
+        if let Some(head) = self.head.get() {
             if core::ptr::eq(head, node) {
-                self.head = node.next.get();
+                self.head.set(node.next.get());
                 return;
             }
 
@@ -116,19 +118,6 @@ impl<'a, T> LinkedList<'a, T> {
     }
 
     pub fn count(&self) -> usize {
-        match self.head {
-            None => 0,
-            Some(head) => {
-                let mut current = head;
-                let mut count = 1;
-
-                while let Some(next) = current.next.get() {
-                    count += 1;
-                    current = next;
-                }
-
-                count
-            }
-        }
+        self.iter().count()
     }
 }

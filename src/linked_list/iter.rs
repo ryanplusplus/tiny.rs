@@ -20,12 +20,16 @@ impl<'a, T> IntoIterator for LinkedList<'a, T> {
     type IntoIter = LinkedListIter<'a, T>;
 
     fn into_iter(self) -> Self::IntoIter {
-        LinkedListIter { current: self.head }
+        LinkedListIter {
+            current: self.head.get(),
+        }
     }
 }
 
 impl<'a, T> LinkedList<'a, T> {
     pub fn iter(&self) -> LinkedListIter<'a, T> {
-        LinkedListIter { current: self.head }
+        LinkedListIter {
+            current: self.head.get(),
+        }
     }
 }

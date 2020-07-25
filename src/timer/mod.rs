@@ -44,7 +44,7 @@ impl<'a> TimerGroup<'a> {
     }
 
     pub fn start<Context>(
-        &mut self,
+        &self,
         timer: &'a Timer<'a>,
         ticks: Ticks,
         context: &'a Context,

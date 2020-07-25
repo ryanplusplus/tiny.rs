@@ -4,7 +4,7 @@ use core::ops::Deref;
 
 #[test]
 fn should_push_and_pop_front() {
-    let mut list = LinkedList::new();
+    let list = LinkedList::new();
     let node1: LinkedListNode<u8> = LinkedListNode::new(21);
     let node2: LinkedListNode<u8> = LinkedListNode::new(42);
 
@@ -18,7 +18,7 @@ fn should_push_and_pop_front() {
 
 #[test]
 fn should_push_back() {
-    let mut list = LinkedList::new();
+    let list = LinkedList::new();
     let node1: LinkedListNode<u8> = LinkedListNode::new(21);
     let node2: LinkedListNode<u8> = LinkedListNode::new(42);
     let node3: LinkedListNode<u8> = LinkedListNode::new(84);
@@ -35,7 +35,7 @@ fn should_push_back() {
 
 #[test]
 fn should_pop_back() {
-    let mut list = LinkedList::new();
+    let list = LinkedList::new();
     let node1: LinkedListNode<u8> = LinkedListNode::new(21);
     let node2: LinkedListNode<u8> = LinkedListNode::new(42);
 
@@ -49,7 +49,7 @@ fn should_pop_back() {
 
 #[test]
 fn should_remove_from_front() {
-    let mut list = LinkedList::new();
+    let list = LinkedList::new();
     let node1: LinkedListNode<u8> = LinkedListNode::new(21);
     let node2: LinkedListNode<u8> = LinkedListNode::new(42);
     let node3: LinkedListNode<u8> = LinkedListNode::new(63);
@@ -67,7 +67,7 @@ fn should_remove_from_front() {
 
 #[test]
 fn should_remove_from_middle() {
-    let mut list = LinkedList::new();
+    let list = LinkedList::new();
     let node1: LinkedListNode<u8> = LinkedListNode::new(21);
     let node2: LinkedListNode<u8> = LinkedListNode::new(42);
     let node3: LinkedListNode<u8> = LinkedListNode::new(63);
@@ -85,7 +85,7 @@ fn should_remove_from_middle() {
 
 #[test]
 fn should_remove_from_back() {
-    let mut list = LinkedList::new();
+    let list = LinkedList::new();
     let node1: LinkedListNode<u8> = LinkedListNode::new(21);
     let node2: LinkedListNode<u8> = LinkedListNode::new(42);
     let node3: LinkedListNode<u8> = LinkedListNode::new(63);
@@ -103,7 +103,7 @@ fn should_remove_from_back() {
 
 #[test]
 fn should_count() {
-    let mut list = LinkedList::new();
+    let list = LinkedList::new();
     let node1: LinkedListNode<u8> = LinkedListNode::new(21);
     let node2: LinkedListNode<u8> = LinkedListNode::new(42);
 
@@ -124,7 +124,7 @@ fn should_count() {
 
 #[test]
 fn should_be_iterable() {
-    let mut list = LinkedList::new();
+    let list = LinkedList::new();
     let node1: LinkedListNode<u8> = LinkedListNode::new(21);
     let node2: LinkedListNode<u8> = LinkedListNode::new(42);
     list.push_back(&node1);
@@ -138,7 +138,7 @@ fn should_be_iterable() {
 
 #[test]
 fn should_be_iterable_twice() {
-    let mut list = LinkedList::new();
+    let list = LinkedList::new();
     let node1: LinkedListNode<u8> = LinkedListNode::new(21);
     let node2: LinkedListNode<u8> = LinkedListNode::new(42);
     list.push_back(&node1);
