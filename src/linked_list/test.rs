@@ -1,5 +1,6 @@
 extern crate std;
 use super::{LinkedList, LinkedListNode};
+use core::ops::Deref;
 
 #[test]
 fn should_push_and_pop_front() {
@@ -10,8 +11,8 @@ fn should_push_and_pop_front() {
     list.push_front(&node1);
     list.push_front(&node2);
 
-    assert_eq!(&42, list.pop_front().unwrap().value());
-    assert_eq!(&21, list.pop_front().unwrap().value());
+    assert_eq!(&42, list.pop_front().unwrap().deref());
+    assert_eq!(&21, list.pop_front().unwrap().deref());
     assert!(list.pop_front().is_none());
 }
 
@@ -26,9 +27,9 @@ fn should_push_back() {
     list.push_back(&node2);
     list.push_back(&node3);
 
-    assert_eq!(&21, list.pop_front().unwrap().value());
-    assert_eq!(&42, list.pop_front().unwrap().value());
-    assert_eq!(&84, list.pop_front().unwrap().value());
+    assert_eq!(&21, list.pop_front().unwrap().deref());
+    assert_eq!(&42, list.pop_front().unwrap().deref());
+    assert_eq!(&84, list.pop_front().unwrap().deref());
     assert!(list.pop_front().is_none());
 }
 
@@ -41,8 +42,8 @@ fn should_pop_back() {
     list.push_back(&node1);
     list.push_back(&node2);
 
-    assert_eq!(&42, list.pop_back().unwrap().value());
-    assert_eq!(&21, list.pop_back().unwrap().value());
+    assert_eq!(&42, list.pop_back().unwrap().deref());
+    assert_eq!(&21, list.pop_back().unwrap().deref());
     assert!(list.pop_back().is_none());
 }
 
@@ -59,8 +60,8 @@ fn should_remove_from_front() {
 
     list.remove(&node1);
 
-    assert_eq!(&42, list.pop_front().unwrap().value());
-    assert_eq!(&63, list.pop_front().unwrap().value());
+    assert_eq!(&42, list.pop_front().unwrap().deref());
+    assert_eq!(&63, list.pop_front().unwrap().deref());
     assert!(list.pop_front().is_none());
 }
 
@@ -77,8 +78,8 @@ fn should_remove_from_middle() {
 
     list.remove(&node2);
 
-    assert_eq!(&21, list.pop_front().unwrap().value());
-    assert_eq!(&63, list.pop_front().unwrap().value());
+    assert_eq!(&21, list.pop_front().unwrap().deref());
+    assert_eq!(&63, list.pop_front().unwrap().deref());
     assert!(list.pop_front().is_none());
 }
 
@@ -95,8 +96,8 @@ fn should_remove_from_back() {
 
     list.remove(&node3);
 
-    assert_eq!(&21, list.pop_front().unwrap().value());
-    assert_eq!(&42, list.pop_front().unwrap().value());
+    assert_eq!(&21, list.pop_front().unwrap().deref());
+    assert_eq!(&42, list.pop_front().unwrap().deref());
     assert!(list.pop_front().is_none());
 }
 

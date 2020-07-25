@@ -1,4 +1,7 @@
-use core::cell::Cell;
+use core::{
+    cell::Cell,
+    ops::{Deref, DerefMut},
+};
 
 mod iter;
 
@@ -21,9 +24,19 @@ impl<T> LinkedListNode<'_, T> {
             value,
         }
     }
+}
 
-    pub fn value(&self) -> &T {
+impl<T> Deref for LinkedListNode<'_, T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
         &self.value
+    }
+}
+
+impl<T> DerefMut for LinkedListNode<'_, T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.value
     }
 }
 

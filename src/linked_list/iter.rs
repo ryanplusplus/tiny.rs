@@ -1,4 +1,5 @@
 use super::{LinkedList, LinkedListNode};
+use core::ops::Deref;
 
 pub struct LinkedListIter<'node, T> {
     current: Option<&'node LinkedListNode<'node, T>>,
@@ -10,7 +11,7 @@ impl<'a, T> Iterator for LinkedListIter<'a, T> {
     fn next(&mut self) -> Option<Self::Item> {
         let old = self.current;
         self.current = self.current.and_then(|node| node.next.get());
-        old.map(|node| node.value())
+        old.map(Deref::deref)
     }
 }
 
