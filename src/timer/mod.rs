@@ -1,13 +1,10 @@
 use super::callback::Callback;
 use super::linked_list::{LinkedList, LinkedListNode};
-use super::time_source;
-use super::time_source::TimeSource;
+use super::time_source::{Ticks, TimeSource};
 use core::cell::Cell;
 
 #[cfg(test)]
 mod test;
-
-pub type Ticks = u32;
 
 pub struct TimerData<'a> {
     remaining_ticks: Cell<u32>,
@@ -15,7 +12,7 @@ pub struct TimerData<'a> {
 }
 
 impl TimerData<'_> {
-    fn new() -> Self {
+    const fn new() -> Self {
         Self {
             remaining_ticks: Cell::new(0),
             callback: Cell::new(None),
@@ -27,12 +24,12 @@ type Timer<'a> = LinkedListNode<'a, TimerData<'a>>;
 
 pub struct TimerGroup<'a> {
     timers: LinkedList<'a, TimerData<'a>>,
-    last_ticks: time_source::Ticks,
+    last_ticks: Ticks,
     time_source: &'a dyn TimeSource,
 }
 
 impl<'a> TimerGroup<'a> {
-    pub fn new_timer() -> Timer<'a> {
+    pub const fn new_timer() -> Timer<'a> {
         LinkedListNode::new(TimerData::new())
     }
 
