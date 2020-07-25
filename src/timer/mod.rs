@@ -48,9 +48,8 @@ impl<'a> TimerGroup<'a> {
         context: &'a Context,
         callback: fn(context: &Context),
     ) {
-        timer.value.remaining_ticks.replace(ticks);
+        timer.remaining_ticks.replace(ticks);
         timer
-            .value
             .callback
             .replace(Some(Callback::new(context, callback)));
 
@@ -58,7 +57,7 @@ impl<'a> TimerGroup<'a> {
     }
 
     pub fn remaining_ticks(&self, timer: &Timer) -> Ticks {
-        timer.value.remaining_ticks.get()
+        timer.remaining_ticks.get()
     }
 
     pub fn run(&mut self) {
