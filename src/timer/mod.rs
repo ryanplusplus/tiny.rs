@@ -65,11 +65,13 @@ impl<'a> TimerGroup<'a> {
         let delta_ticks = current_ticks.wrapping_sub(self.last_ticks);
         self.last_ticks = current_ticks;
 
-        for timer in self.timers.iter() {
-            if timer.remaining_ticks.get() > delta_ticks {
-                timer
-                    .remaining_ticks
-                    .replace(timer.remaining_ticks.get() - delta_ticks);
+        for (timer, remaining_ticks) in self
+            .timers
+            .iter()
+            .map(|timer| (timer, timer.remaining_ticks.get()))
+        {
+            if remaining_ticks > delta_ticks {
+                timer.remaining_ticks.replace(remaining_ticks - delta_ticks);
             } else {
                 timer.remaining_ticks.replace(0);
 
