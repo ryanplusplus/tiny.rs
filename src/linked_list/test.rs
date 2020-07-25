@@ -135,3 +135,22 @@ fn should_be_iterable() {
     assert_eq!(iter.next(), Some(&42));
     assert_eq!(iter.next(), None);
 }
+
+#[test]
+fn should_be_iterable_twice() {
+    let mut list = LinkedList::new();
+    let node1: LinkedListNode<u8> = LinkedListNode::new(21);
+    let node2: LinkedListNode<u8> = LinkedListNode::new(42);
+    list.push_back(&node1);
+    list.push_back(&node2);
+
+    let mut iter = list.iter();
+    assert_eq!(iter.next(), Some(&21));
+    assert_eq!(iter.next(), Some(&42));
+    assert_eq!(iter.next(), None);
+
+    let mut iter = list.iter();
+    assert_eq!(iter.next(), Some(&21));
+    assert_eq!(iter.next(), Some(&42));
+    assert_eq!(iter.next(), None);
+}
