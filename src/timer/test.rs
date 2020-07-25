@@ -1,5 +1,5 @@
-use super::super::time_source::{Ticks, TimeSource};
-use super::TimerGroup;
+use super::super::time_source::TimeSource;
+use super::{Ticks, TimerGroup};
 use core::cell::Cell;
 
 struct FakeTimeSource {

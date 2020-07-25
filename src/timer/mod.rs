@@ -1,7 +1,9 @@
 use super::callback::Callback;
 use super::linked_list::{LinkedList, LinkedListNode};
-use super::time_source::{Ticks, TimeSource};
+use super::time_source::TimeSource;
 use core::cell::Cell;
+
+pub use super::time_source::Ticks;
 
 #[cfg(test)]
 mod test;
