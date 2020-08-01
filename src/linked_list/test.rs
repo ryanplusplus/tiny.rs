@@ -154,3 +154,20 @@ fn should_be_iterable_twice() {
     assert_eq!(iter.next().map(Deref::deref), Some(&42));
     assert_eq!(iter.next().map(Deref::deref), None);
 }
+
+#[test]
+fn should_allow_the_current_node_to_be_removed() {
+    let list = LinkedList::new();
+    let node1: LinkedListNode<u8> = LinkedListNode::new(21);
+    let node2: LinkedListNode<u8> = LinkedListNode::new(42);
+    let node3: LinkedListNode<u8> = LinkedListNode::new(63);
+    list.push_back(&node1);
+    list.push_back(&node2);
+    list.push_back(&node3);
+
+    let mut iter = list.iter();
+    assert_eq!(iter.next().map(Deref::deref), Some(&21));
+    list.remove(iter.next().unwrap());
+    assert_eq!(iter.next().map(Deref::deref), Some(&63));
+    assert_eq!(iter.next().map(Deref::deref), None);
+}
