@@ -75,6 +75,8 @@ impl<'a> TimerGroup<'a> {
             } else {
                 timer.remaining_ticks.set(0);
 
+                self.timers.remove(timer);
+
                 timer
                     .callback
                     .get()

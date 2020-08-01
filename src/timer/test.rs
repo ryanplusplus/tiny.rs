@@ -105,44 +105,22 @@ fn should_run_multiple_timers() {
 }
 
 #[test]
-fn should_prevent_starvation() {
+fn should_remove_timers_that_have_expired() {
     let time_source = FakeTimeSource::new(1234);
-    let ran1 = Cell::new(false);
-    let ran2 = Cell::new(false);
+    let run_count = Cell::new(0u8);
 
     let mut timer_group = TimerGroup::new(&time_source);
-    let timer1 = TimerGroup::new_timer();
-    let timer2 = TimerGroup::new_timer();
+    let timer = TimerGroup::new_timer();
 
-    timer_group.start(&timer1, 5, &ran1, |ran| {
-        ran.set(true);
+    timer_group.start(&timer, 5, &run_count, |run_count| {
+        run_count.set(run_count.get() + 1);
     });
-
-    timer_group.start(&timer2, 11, &ran2, |ran| {
-        ran.set(true);
-    });
-
-    timer_group.run();
-    assert!(!ran1.get());
-    assert!(!ran2.get());
-
-    time_source.tick(4);
-    timer_group.run();
-    assert!(!ran1.get());
-    assert!(!ran2.get());
-
-    time_source.tick(1);
-    timer_group.run();
-    assert!(ran1.get());
-    assert!(!ran2.get());
 
     time_source.tick(5);
     timer_group.run();
-    assert!(ran1.get());
-    assert!(!ran2.get());
+    assert_eq!(1, run_count.get());
 
-    time_source.tick(1);
+    time_source.tick(5);
     timer_group.run();
-    assert!(ran1.get());
-    assert!(ran2.get());
+    assert_eq!(1, run_count.get());
 }

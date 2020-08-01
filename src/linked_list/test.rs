@@ -131,9 +131,9 @@ fn should_be_iterable() {
     list.push_back(&node2);
 
     let mut iter = list.iter();
-    assert_eq!(iter.next(), Some(&21));
-    assert_eq!(iter.next(), Some(&42));
-    assert_eq!(iter.next(), None);
+    assert_eq!(iter.next().map(Deref::deref), Some(&21));
+    assert_eq!(iter.next().map(Deref::deref), Some(&42));
+    assert_eq!(iter.next().map(Deref::deref), None);
 }
 
 #[test]
@@ -145,12 +145,12 @@ fn should_be_iterable_twice() {
     list.push_back(&node2);
 
     let mut iter = list.iter();
-    assert_eq!(iter.next(), Some(&21));
-    assert_eq!(iter.next(), Some(&42));
-    assert_eq!(iter.next(), None);
+    assert_eq!(iter.next().map(Deref::deref), Some(&21));
+    assert_eq!(iter.next().map(Deref::deref), Some(&42));
+    assert_eq!(iter.next().map(Deref::deref), None);
 
     let mut iter = list.iter();
-    assert_eq!(iter.next(), Some(&21));
-    assert_eq!(iter.next(), Some(&42));
-    assert_eq!(iter.next(), None);
+    assert_eq!(iter.next().map(Deref::deref), Some(&21));
+    assert_eq!(iter.next().map(Deref::deref), Some(&42));
+    assert_eq!(iter.next().map(Deref::deref), None);
 }
