@@ -22,11 +22,11 @@ impl TimerData<'_> {
     }
 }
 
-type Timer<'a> = LinkedListNode<'a, TimerData<'a>>;
+pub type Timer<'a> = LinkedListNode<'a, TimerData<'a>>;
 
 pub struct TimerGroup<'a> {
     timers: LinkedList<'a, TimerData<'a>>,
-    last_ticks: Ticks,
+    last_ticks: Cell<Ticks>,
     time_source: &'a dyn TimeSource,
 }
 
@@ -38,7 +38,7 @@ impl<'a> TimerGroup<'a> {
     pub fn new(time_source: &'a dyn TimeSource) -> Self {
         Self {
             timers: LinkedList::new(),
-            last_ticks: time_source.ticks(),
+            last_ticks: Cell::new(time_source.ticks()),
             time_source,
         }
     }
@@ -48,7 +48,7 @@ impl<'a> TimerGroup<'a> {
         timer: &'a Timer<'a>,
         ticks: Ticks,
         context: &'a Context,
-        callback: fn(context: &Context),
+        callback: fn(context: &'a Context),
     ) {
         timer.remaining_ticks.set(ticks);
         timer.callback.set(Some(Callback::new(context, callback)));
@@ -60,10 +60,10 @@ impl<'a> TimerGroup<'a> {
         timer.remaining_ticks.get()
     }
 
-    pub fn run(&mut self) {
+    pub fn run(&self) {
         let current_ticks = self.time_source.ticks();
-        let delta_ticks = current_ticks.wrapping_sub(self.last_ticks);
-        self.last_ticks = current_ticks;
+        let delta_ticks = current_ticks.wrapping_sub(self.last_ticks.get());
+        self.last_ticks.set(current_ticks);
 
         for (timer, remaining_ticks) in self
             .timers

@@ -29,7 +29,7 @@ fn should_run_a_single_timer() {
     let time_source = FakeTimeSource::new(1234);
     let ran = Cell::new(false);
 
-    let mut timer_group = TimerGroup::new(&time_source);
+    let timer_group = TimerGroup::new(&time_source);
     let timer = TimerGroup::new_timer();
 
     timer_group.start(&timer, 11, &ran, |ran| {
@@ -57,7 +57,7 @@ fn should_run_multiple_timers() {
     let ran1 = Cell::new(false);
     let ran2 = Cell::new(false);
 
-    let mut timer_group = TimerGroup::new(&time_source);
+    let timer_group = TimerGroup::new(&time_source);
     let timer1 = TimerGroup::new_timer();
     let timer2 = TimerGroup::new_timer();
 
@@ -109,7 +109,7 @@ fn should_remove_timers_that_have_expired() {
     let time_source = FakeTimeSource::new(1234);
     let run_count = Cell::new(0u8);
 
-    let mut timer_group = TimerGroup::new(&time_source);
+    let timer_group = TimerGroup::new(&time_source);
     let timer = TimerGroup::new_timer();
 
     timer_group.start(&timer, 5, &run_count, |run_count| {
