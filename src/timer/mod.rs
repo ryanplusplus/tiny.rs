@@ -1,4 +1,4 @@
-use super::callback::Callback;
+use super::callback::CallbackWith1Argument;
 use super::linked_list::{LinkedList, LinkedListNode};
 use super::time_source::TimeSource;
 use core::cell::Cell;
@@ -12,7 +12,7 @@ pub struct TimerData<'a> {
     periodic: Cell<bool>,
     start_ticks: Cell<Ticks>,
     remaining_ticks: Cell<Ticks>,
-    callback: Cell<Option<Callback<'a>>>,
+    callback: Cell<Option<CallbackWith1Argument<'a, TimerGroup<'a>>>>,
 }
 
 impl TimerData<'_> {
@@ -64,12 +64,14 @@ impl<'a> TimerGroup<'a> {
         timer: &'a Timer<'a>,
         ticks: Ticks,
         context: &'a Context,
-        callback: fn(context: &'a Context),
+        callback: fn(context: &'a Context, &TimerGroup<'a>),
     ) {
         timer.periodic.set(periodic);
         timer.start_ticks.set(ticks);
         timer.remaining_ticks.set(ticks);
-        timer.callback.set(Some(Callback::new(context, callback)));
+        timer
+            .callback
+            .set(Some(CallbackWith1Argument::new(context, callback)));
 
         self.add_timer(timer);
     }
@@ -79,7 +81,7 @@ impl<'a> TimerGroup<'a> {
         timer: &'a Timer<'a>,
         ticks: Ticks,
         context: &'a Context,
-        callback: fn(context: &'a Context),
+        callback: fn(context: &'a Context, &TimerGroup<'a>),
     ) {
         self.start_internal(false, timer, ticks, context, callback);
     }
@@ -89,7 +91,7 @@ impl<'a> TimerGroup<'a> {
         timer: &'a Timer<'a>,
         ticks: Ticks,
         context: &'a Context,
-        callback: fn(context: &'a Context),
+        callback: fn(context: &'a Context, &TimerGroup<'a>),
     ) {
         self.start_internal(true, timer, ticks, context, callback);
     }
@@ -140,7 +142,7 @@ impl<'a> TimerGroup<'a> {
                         self.timers.remove(timer);
                     }
 
-                    timer.callback.get().unwrap().call();
+                    timer.callback.get().unwrap().call(&self);
 
                     if timer.periodic.get() && self.timers.contains(timer) {
                         timer.remaining_ticks.set(timer.start_ticks.get());

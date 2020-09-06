@@ -32,7 +32,7 @@ fn should_run_a_single_timer() {
     let timer_group = TimerGroup::new(&time_source);
     let timer = TimerGroup::new_timer();
 
-    timer_group.start(&timer, 11, &ran, |ran| {
+    timer_group.start(&timer, 11, &ran, |ran, _| {
         ran.set(true);
     });
 
@@ -61,11 +61,11 @@ fn should_run_multiple_timers() {
     let timer1 = TimerGroup::new_timer();
     let timer2 = TimerGroup::new_timer();
 
-    timer_group.start(&timer1, 5, &ran1, |ran| {
+    timer_group.start(&timer1, 5, &ran1, |ran, _| {
         ran.set(true);
     });
 
-    timer_group.start(&timer2, 11, &ran2, |ran| {
+    timer_group.start(&timer2, 11, &ran2, |ran, _| {
         ran.set(true);
     });
 
@@ -112,7 +112,7 @@ fn should_remove_timers_that_have_expired() {
     let timer_group = TimerGroup::new(&time_source);
     let timer = TimerGroup::new_timer();
 
-    timer_group.start(&timer, 5, &run_count, |run_count| {
+    timer_group.start(&timer, 5, &run_count, |run_count, _| {
         run_count.set(run_count.get() + 1);
     });
 
@@ -133,7 +133,7 @@ fn should_run_periodic_timers() {
     let timer_group = TimerGroup::new(&time_source);
     let timer = TimerGroup::new_timer();
 
-    timer_group.start_periodic(&timer, 5, &run_count, |run_count| {
+    timer_group.start_periodic(&timer, 5, &run_count, |run_count, _| {
         run_count.set(run_count.get() + 1);
     });
 
@@ -156,7 +156,7 @@ fn should_allow_periodic_timers_to_be_stopped_from_callbacks() {
 
     let context = (&timer_group, &timer, &run_count);
 
-    timer_group.start_periodic(&timer, 5, &context, |context| {
+    timer_group.start_periodic(&timer, 5, &context, |context, _| {
         context.2.set(context.2.get() + 1);
         context.0.stop(context.1);
     });
@@ -178,11 +178,11 @@ fn should_allow_timers_to_be_restarted_without_being_stopped() {
     let timer_group = TimerGroup::new(&time_source);
     let timer = TimerGroup::new_timer();
 
-    timer_group.start(&timer, 5, &run_count, |run_count| {
+    timer_group.start(&timer, 5, &run_count, |run_count, _| {
         run_count.set(run_count.get() + 1);
     });
 
-    timer_group.start(&timer, 3, &run_count, |run_count| {
+    timer_group.start(&timer, 3, &run_count, |run_count, _| {
         run_count.set(run_count.get() + 1);
     });
 
@@ -201,11 +201,11 @@ fn should_call_back_one_timer_per_run() {
     let timer1 = TimerGroup::new_timer();
     let timer2 = TimerGroup::new_timer();
 
-    timer_group.start(&timer1, 5, &ran1, |ran| {
+    timer_group.start(&timer1, 5, &ran1, |ran, _| {
         ran.set(true);
     });
 
-    timer_group.start(&timer2, 5, &ran2, |ran| {
+    timer_group.start(&timer2, 5, &ran2, |ran, _| {
         ran.set(true);
     });
 
@@ -225,11 +225,11 @@ fn should_not_allow_starvation() {
     let timer1 = TimerGroup::new_timer();
     let timer2 = TimerGroup::new_timer();
 
-    timer_group.start(&timer1, 0, &run_count1, |run_count| {
+    timer_group.start(&timer1, 0, &run_count1, |run_count, _| {
         run_count.set(run_count.get() + 1);
     });
 
-    timer_group.start(&timer2, 0, &run_count2, |run_count| {
+    timer_group.start(&timer2, 0, &run_count2, |run_count, _| {
         run_count.set(run_count.get() + 1);
     });
 
@@ -250,8 +250,8 @@ fn should_indicate_whether_a_timer_is_running() {
     let timer1 = TimerGroup::new_timer();
     let timer2 = TimerGroup::new_timer();
 
-    timer_group.start(&timer1, 5, &0, |_| {});
-    timer_group.start(&timer2, 7, &0, |_| {});
+    timer_group.start(&timer1, 5, &0, |_, _| {});
+    timer_group.start(&timer2, 7, &0, |_, _| {});
     assert!(timer_group.running(&timer1));
     assert!(timer_group.running(&timer2));
 
@@ -275,9 +275,9 @@ fn should_indicate_when_the_next_timer_will_be_ready() {
     let timer2 = TimerGroup::new_timer();
     let timer3 = TimerGroup::new_timer();
 
-    timer_group.start(&timer1, 5, &0, |_| {});
-    timer_group.start(&timer2, 7, &0, |_| {});
-    timer_group.start(&timer3, 5, &0, |_| {});
+    timer_group.start(&timer1, 5, &0, |_, _| {});
+    timer_group.start(&timer2, 7, &0, |_, _| {});
+    timer_group.start(&timer3, 5, &0, |_, _| {});
 
     assert_eq!(5, timer_group.run());
 
@@ -300,8 +300,8 @@ fn should_consider_periodic_timers_when_giving_time_until_next_ready() {
     let timer1 = TimerGroup::new_timer();
     let timer2 = TimerGroup::new_timer();
 
-    timer_group.start_periodic(&timer1, 2, &0, |_| {});
-    timer_group.start(&timer2, 7, &0, |_| {});
+    timer_group.start_periodic(&timer1, 2, &0, |_, _| {});
+    timer_group.start(&timer2, 7, &0, |_, _| {});
 
     time_source.tick(2);
     assert_eq!(2, timer_group.run());
@@ -313,10 +313,9 @@ fn should_consider_restarted_timers_when_giving_time_until_next_ready() {
 
     let timer_group = TimerGroup::new(&time_source);
     let timer = TimerGroup::new_timer();
-    let context = (&timer_group, &timer);
 
-    timer_group.start(&timer, 2, &context, |(timer_group, timer)| {
-        timer_group.start(&timer, 5, &0, |_| {});
+    timer_group.start(&timer, 2, &timer, |timer, timer_group| {
+        timer_group.start(&timer, 5, &0, |_, _| {});
     });
 
     time_source.tick(2);
