@@ -31,6 +31,7 @@ pub type Timer<'a> = LinkedListNode<'a, TimerData<'a>>;
 pub struct TimerGroup<'a> {
     timers: LinkedList<'a, TimerData<'a>>,
     last_ticks: Cell<Ticks>,
+    next_ready: Cell<Ticks>,
     time_source: &'a dyn TimeSource,
 }
 
@@ -43,8 +44,18 @@ impl<'a> TimerGroup<'a> {
         Self {
             timers: LinkedList::new(),
             last_ticks: Cell::new(time_source.ticks()),
+            next_ready: Cell::new(0),
             time_source,
         }
+    }
+
+    fn add_timer(&self, timer: &'a Timer<'a>) {
+        if timer.start_ticks.get() < self.next_ready.get() {
+            self.next_ready.set(timer.start_ticks.get());
+        }
+
+        self.timers.remove(timer);
+        self.timers.push_back(timer);
     }
 
     fn start_internal<Context>(
@@ -60,7 +71,7 @@ impl<'a> TimerGroup<'a> {
         timer.remaining_ticks.set(ticks);
         timer.callback.set(Some(Callback::new(context, callback)));
 
-        self.timers.push_back(timer);
+        self.add_timer(timer);
     }
 
     pub fn start<Context>(
@@ -95,36 +106,40 @@ impl<'a> TimerGroup<'a> {
         timer.remaining_ticks.get()
     }
 
-    pub fn run(&self) {
-        let mut called_back = false;
+    pub fn run(&self) -> Ticks {
+        self.next_ready.set(Ticks::max_value());
         let current_ticks = self.time_source.ticks();
         let delta_ticks = current_ticks.wrapping_sub(self.last_ticks.get());
         self.last_ticks.set(current_ticks);
 
-        for (timer, remaining_ticks) in self
-            .timers
-            .iter()
-            .map(|timer| (timer, timer.remaining_ticks.get()))
-        {
-            if remaining_ticks > delta_ticks {
-                timer.remaining_ticks.set(remaining_ticks - delta_ticks);
+        for timer in self.timers.iter() {
+            if timer.remaining_ticks.get() > delta_ticks {
+                timer
+                    .remaining_ticks
+                    .set(timer.remaining_ticks.get() - delta_ticks);
+
+                if timer.remaining_ticks.get() < self.next_ready.get() {
+                    self.next_ready.set(timer.remaining_ticks.get());
+                }
             } else {
                 timer.remaining_ticks.set(0);
-
-                if !called_back {
-                    called_back = true;
-
-                    timer.callback.get().unwrap().call();
-
-                    if timer.periodic.get() && self.timers.contains(timer) {
-                        timer.remaining_ticks.set(timer.start_ticks.get());
-                        self.timers.remove(timer);
-                        self.timers.push_back(timer);
-                    } else {
-                        self.timers.remove(timer);
-                    }
-                }
             }
         }
+
+        for timer in self.timers.iter() {
+            if timer.remaining_ticks.get() == 0 {
+                timer.callback.get().unwrap().call();
+
+                if timer.periodic.get() && self.timers.contains(timer) {
+                    timer.remaining_ticks.set(timer.start_ticks.get());
+                    self.add_timer(timer);
+                } else {
+                    self.timers.remove(timer);
+                }
+            }
+            return self.next_ready.get();
+        }
+
+        self.next_ready.get()
     }
 }

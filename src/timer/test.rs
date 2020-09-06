@@ -171,6 +171,27 @@ fn should_allow_periodic_timers_to_be_stopped_from_callbacks() {
 }
 
 #[test]
+fn should_allow_timers_to_be_restarted_without_being_stopped() {
+    let time_source = FakeTimeSource::new(1234);
+    let run_count = Cell::new(0u8);
+
+    let timer_group = TimerGroup::new(&time_source);
+    let timer = TimerGroup::new_timer();
+
+    timer_group.start(&timer, 5, &run_count, |run_count| {
+        run_count.set(run_count.get() + 1);
+    });
+
+    timer_group.start(&timer, 3, &run_count, |run_count| {
+        run_count.set(run_count.get() + 1);
+    });
+
+    time_source.tick(3);
+    timer_group.run();
+    assert_eq!(1, run_count.get());
+}
+
+#[test]
 fn should_call_back_one_timer_per_run() {
     let time_source = FakeTimeSource::new(1234);
     let ran1 = Cell::new(false);
@@ -243,4 +264,58 @@ fn should_indicate_whether_a_timer_is_running() {
     timer_group.run();
     assert!(!timer_group.running(&timer1));
     assert!(!timer_group.running(&timer2));
+}
+
+#[test]
+fn should_indicate_when_the_next_timer_will_be_ready() {
+    let time_source = FakeTimeSource::new(1234);
+
+    let timer_group = TimerGroup::new(&time_source);
+    let timer1 = TimerGroup::new_timer();
+    let timer2 = TimerGroup::new_timer();
+
+    timer_group.start(&timer1, 5, &0, |_| {});
+    timer_group.start(&timer2, 7, &0, |_| {});
+
+    assert_eq!(5, timer_group.run());
+
+    time_source.tick(4);
+    assert_eq!(1, timer_group.run());
+
+    time_source.tick(1);
+    assert_eq!(2, timer_group.run());
+
+    time_source.tick(2);
+    assert_eq!(Ticks::max_value(), timer_group.run());
+}
+
+#[test]
+fn should_consider_periodic_timers_when_giving_time_until_next_ready() {
+    let time_source = FakeTimeSource::new(1234);
+
+    let timer_group = TimerGroup::new(&time_source);
+    let timer1 = TimerGroup::new_timer();
+    let timer2 = TimerGroup::new_timer();
+
+    timer_group.start_periodic(&timer1, 2, &0, |_| {});
+    timer_group.start(&timer2, 7, &0, |_| {});
+
+    time_source.tick(2);
+    assert_eq!(2, timer_group.run());
+}
+
+#[test]
+fn should_consider_restarted_timers_when_giving_time_until_next_ready() {
+    let time_source = FakeTimeSource::new(1234);
+
+    let timer_group = TimerGroup::new(&time_source);
+    let timer = TimerGroup::new_timer();
+    let context = (&timer_group, &timer);
+
+    timer_group.start(&timer, 2, &context, |(timer_group, timer)| {
+        timer_group.start(&timer, 5, &0, |_| {});
+    });
+
+    time_source.tick(2);
+    assert_eq!(5, timer_group.run());
 }
