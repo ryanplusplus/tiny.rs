@@ -273,9 +273,11 @@ fn should_indicate_when_the_next_timer_will_be_ready() {
     let timer_group = TimerGroup::new(&time_source);
     let timer1 = TimerGroup::new_timer();
     let timer2 = TimerGroup::new_timer();
+    let timer3 = TimerGroup::new_timer();
 
     timer_group.start(&timer1, 5, &0, |_| {});
     timer_group.start(&timer2, 7, &0, |_| {});
+    timer_group.start(&timer3, 5, &0, |_| {});
 
     assert_eq!(5, timer_group.run());
 
@@ -283,6 +285,7 @@ fn should_indicate_when_the_next_timer_will_be_ready() {
     assert_eq!(1, timer_group.run());
 
     time_source.tick(1);
+    assert_eq!(0, timer_group.run());
     assert_eq!(2, timer_group.run());
 
     time_source.tick(2);

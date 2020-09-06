@@ -111,6 +111,7 @@ impl<'a> TimerGroup<'a> {
         let current_ticks = self.time_source.ticks();
         let delta_ticks = current_ticks.wrapping_sub(self.last_ticks.get());
         self.last_ticks.set(current_ticks);
+        let mut timer_ready = false;
 
         for timer in self.timers.iter() {
             if timer.remaining_ticks.get() > delta_ticks {
@@ -123,21 +124,32 @@ impl<'a> TimerGroup<'a> {
                 }
             } else {
                 timer.remaining_ticks.set(0);
+
+                if timer_ready {
+                    self.next_ready.set(0);
+                }
+
+                timer_ready = true;
             }
         }
 
-        for timer in self.timers.iter() {
-            if timer.remaining_ticks.get() == 0 {
-                timer.callback.get().unwrap().call();
+        if timer_ready {
+            for timer in self.timers.iter() {
+                if timer.remaining_ticks.get() == 0 {
+                    if !timer.periodic.get() {
+                        self.timers.remove(timer);
+                    }
 
-                if timer.periodic.get() && self.timers.contains(timer) {
-                    timer.remaining_ticks.set(timer.start_ticks.get());
-                    self.add_timer(timer);
-                } else {
-                    self.timers.remove(timer);
+                    timer.callback.get().unwrap().call();
+
+                    if timer.periodic.get() && self.timers.contains(timer) {
+                        timer.remaining_ticks.set(timer.start_ticks.get());
+                        self.add_timer(timer);
+                    }
+
+                    break;
                 }
             }
-            return self.next_ready.get();
         }
 
         self.next_ready.get()
