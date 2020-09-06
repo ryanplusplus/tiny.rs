@@ -102,6 +102,31 @@ fn should_remove_from_back() {
 }
 
 #[test]
+fn should_indicate_whether_a_node_is_contained() {
+    let list = LinkedList::new();
+    let node1: LinkedListNode<u8> = LinkedListNode::new(21);
+    let node2: LinkedListNode<u8> = LinkedListNode::new(42);
+    let node3: LinkedListNode<u8> = LinkedListNode::new(63);
+
+    list.push_back(&node1);
+    list.push_back(&node2);
+    list.push_back(&node3);
+    assert!(list.contains(&node1));
+    assert!(list.contains(&node2));
+    assert!(list.contains(&node3));
+
+    list.remove(&node3);
+    assert!(list.contains(&node1));
+    assert!(list.contains(&node2));
+    assert!(!list.contains(&node3));
+
+    list.remove(&node2);
+    assert!(list.contains(&node1));
+    assert!(!list.contains(&node2));
+    assert!(!list.contains(&node3));
+}
+
+#[test]
 fn should_count() {
     let list = LinkedList::new();
     let node1: LinkedListNode<u8> = LinkedListNode::new(21);

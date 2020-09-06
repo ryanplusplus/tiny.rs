@@ -9,13 +9,17 @@ pub use super::time_source::Ticks;
 mod test;
 
 pub struct TimerData<'a> {
-    remaining_ticks: Cell<u32>,
+    periodic: Cell<bool>,
+    start_ticks: Cell<Ticks>,
+    remaining_ticks: Cell<Ticks>,
     callback: Cell<Option<Callback<'a>>>,
 }
 
 impl TimerData<'_> {
     const fn new() -> Self {
         Self {
+            periodic: Cell::new(false),
+            start_ticks: Cell::new(0),
             remaining_ticks: Cell::new(0),
             callback: Cell::new(None),
         }
@@ -43,6 +47,22 @@ impl<'a> TimerGroup<'a> {
         }
     }
 
+    fn start_internal<Context>(
+        &self,
+        periodic: bool,
+        timer: &'a Timer<'a>,
+        ticks: Ticks,
+        context: &'a Context,
+        callback: fn(context: &'a Context),
+    ) {
+        timer.periodic.set(periodic);
+        timer.start_ticks.set(ticks);
+        timer.remaining_ticks.set(ticks);
+        timer.callback.set(Some(Callback::new(context, callback)));
+
+        self.timers.push_back(timer);
+    }
+
     pub fn start<Context>(
         &self,
         timer: &'a Timer<'a>,
@@ -50,10 +70,21 @@ impl<'a> TimerGroup<'a> {
         context: &'a Context,
         callback: fn(context: &'a Context),
     ) {
-        timer.remaining_ticks.set(ticks);
-        timer.callback.set(Some(Callback::new(context, callback)));
+        self.start_internal(false, timer, ticks, context, callback);
+    }
 
-        self.timers.push_back(timer);
+    pub fn start_periodic<Context>(
+        &self,
+        timer: &'a Timer<'a>,
+        ticks: Ticks,
+        context: &'a Context,
+        callback: fn(context: &'a Context),
+    ) {
+        self.start_internal(true, timer, ticks, context, callback);
+    }
+
+    pub fn stop(&self, timer: &'a Timer<'a>) {
+        self.timers.remove(timer);
     }
 
     pub fn remaining_ticks(&self, timer: &Timer) -> Ticks {
@@ -61,6 +92,7 @@ impl<'a> TimerGroup<'a> {
     }
 
     pub fn run(&self) {
+        let mut called_back = false;
         let current_ticks = self.time_source.ticks();
         let delta_ticks = current_ticks.wrapping_sub(self.last_ticks.get());
         self.last_ticks.set(current_ticks);
@@ -75,13 +107,19 @@ impl<'a> TimerGroup<'a> {
             } else {
                 timer.remaining_ticks.set(0);
 
-                self.timers.remove(timer);
+                if !called_back {
+                    called_back = true;
 
-                timer
-                    .callback
-                    .get()
-                    .expect("Trying to call an empty Timer Callback")
-                    .call();
+                    timer.callback.get().unwrap().call();
+
+                    if timer.periodic.get() && self.timers.contains(timer) {
+                        timer.remaining_ticks.set(timer.start_ticks.get());
+                        self.timers.remove(timer);
+                        self.timers.push_back(timer);
+                    } else {
+                        self.timers.remove(timer);
+                    }
+                }
             }
         }
     }

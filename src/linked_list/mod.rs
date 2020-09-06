@@ -117,6 +117,15 @@ impl<'a, T> LinkedList<'a, T> {
         }
     }
 
+    pub fn contains(&self, node: &'a LinkedListNode<'a, T>) -> bool {
+        for current in self.iter() {
+            if current as *const LinkedListNode<'a, T> == node as *const LinkedListNode<'a, T> {
+                return true;
+            }
+        }
+        false
+    }
+
     pub fn count(&self) -> usize {
         self.iter().count()
     }
