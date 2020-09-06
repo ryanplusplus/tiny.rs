@@ -220,3 +220,27 @@ fn should_not_allow_starvation() {
     assert_eq!(1, run_count1.get());
     assert_eq!(1, run_count2.get());
 }
+
+#[test]
+fn should_indicate_whether_a_timer_is_running() {
+    let time_source = FakeTimeSource::new(1234);
+
+    let timer_group = TimerGroup::new(&time_source);
+    let timer1 = TimerGroup::new_timer();
+    let timer2 = TimerGroup::new_timer();
+
+    timer_group.start(&timer1, 5, &0, |_| {});
+    timer_group.start(&timer2, 7, &0, |_| {});
+    assert!(timer_group.running(&timer1));
+    assert!(timer_group.running(&timer2));
+
+    time_source.tick(5);
+    timer_group.run();
+    assert!(!timer_group.running(&timer1));
+    assert!(timer_group.running(&timer2));
+
+    time_source.tick(2);
+    timer_group.run();
+    assert!(!timer_group.running(&timer1));
+    assert!(!timer_group.running(&timer2));
+}

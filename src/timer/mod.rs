@@ -87,6 +87,10 @@ impl<'a> TimerGroup<'a> {
         self.timers.remove(timer);
     }
 
+    pub fn running(&self, timer: &'a Timer<'a>) -> bool {
+        self.timers.contains(timer)
+    }
+
     pub fn remaining_ticks(&self, timer: &Timer) -> Ticks {
         timer.remaining_ticks.get()
     }
