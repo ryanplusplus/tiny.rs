@@ -1,9 +1,11 @@
+use super::event::Event;
 use core::cell::Cell;
 
-pub trait KeyValueStore {
+pub trait KeyValueStore<'a> {
     fn read<T: SafelyDeserializable + Sized>(&self, key: Key) -> T;
     fn write<T: Sized>(&self, key: Key, value: &T);
     fn size_of(&self, key: Key) -> Size;
+    fn on_change(&self) -> &Event<'a, Key>;
 }
 
 pub trait SafelyDeserializable {

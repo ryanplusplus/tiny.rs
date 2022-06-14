@@ -1,3 +1,4 @@
+use super::event::Event;
 use super::key_value_store::Key;
 use super::key_value_store::KeyValueStore;
 use super::key_value_store::Size;
@@ -25,6 +26,7 @@ impl RamKeyValueStoreElement {
 pub struct RamKeyValueStore<'a> {
     ram: &'a mut [Cell<u8>],
     elements: &'a [RamKeyValueStoreElement],
+    on_change_event: Event<'a, Key>,
 }
 
 impl<'a> RamKeyValueStore<'a> {
@@ -32,11 +34,15 @@ impl<'a> RamKeyValueStore<'a> {
         let required_size: usize = elements.iter().map(|x| x.size as usize).sum();
         assert!(ram.len() == required_size, "Incorrect RAM size");
 
-        Self { ram, elements }
+        Self {
+            ram,
+            elements,
+            on_change_event: Event::<'a, Key>::new(),
+        }
     }
 }
 
-impl<'a> KeyValueStore for RamKeyValueStore<'a> {
+impl<'a> KeyValueStore<'a> for RamKeyValueStore<'a> {
     fn read<T: crate::key_value_store::SafelyDeserializable + Sized>(&self, key: Key) -> T {
         let mut offset = 0 as usize;
 
@@ -75,6 +81,17 @@ impl<'a> KeyValueStore for RamKeyValueStore<'a> {
             if key == element.key {
                 assert!(mem::size_of::<T>() == element.size as usize, "Invalid size");
 
+                let value_slice = unsafe {
+                    core::slice::from_raw_parts(
+                        value as *const T as *const Cell<u8>,
+                        element.size as usize,
+                    )
+                };
+
+                if value_slice != &self.ram[offset..] {
+                    self.on_change_event.publish(&element.key);
+                }
+
                 let src_raw_pointer = value as *const T as *const u8;
                 let dst_raw_pointer = self.ram[offset..].as_ptr() as *mut u8;
 
@@ -103,5 +120,9 @@ impl<'a> KeyValueStore for RamKeyValueStore<'a> {
         }
 
         panic!("Invalid key");
+    }
+
+    fn on_change(&self) -> &Event<'a, Key> {
+        &self.on_change_event
     }
 }

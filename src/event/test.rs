@@ -3,7 +3,7 @@ use core::cell::Cell;
 
 #[test]
 fn should_do_nothing_whne_published_with_no_subscribers() {
-    let mut event: Event<u8> = Event::new();
+    let event: Event<u8> = Event::new();
     event.publish(&3);
 }
 
@@ -19,7 +19,7 @@ fn should_publish_to_all_subscribers() {
         data.set(Some(*x));
     });
 
-    let mut event: Event<u8> = Event::new();
+    let event: Event<u8> = Event::new();
 
     event.subscribe(&sub1);
     event.subscribe(&sub2);
@@ -42,7 +42,7 @@ fn should_not_publish_subscribers_that_have_unsubscribed() {
         data.set(Some(*x));
     });
 
-    let mut event: Event<u8> = Event::new();
+    let event: Event<u8> = Event::new();
 
     event.subscribe(&sub1);
     event.subscribe(&sub2);
@@ -66,7 +66,7 @@ fn should_allow_subscribers_to_resubscribe() {
         data.set(data.get() + *x);
     });
 
-    let mut event: Event<u8> = Event::new();
+    let event: Event<u8> = Event::new();
 
     event.subscribe(&sub1);
     event.subscribe(&sub2);
