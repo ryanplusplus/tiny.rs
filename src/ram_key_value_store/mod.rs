@@ -48,15 +48,16 @@ impl<'a> KeyValueStore for RamKeyValueStore<'a> {
                     "Invalid contents"
                 );
 
+                let mut value = MaybeUninit::<T>::zeroed();
+                let dst_raw_pointer = value.as_mut_ptr() as *mut u8;
+                let src_raw_pointer = self.ram[offset..].as_ptr() as *const u8;
+
                 unsafe {
-                    let mut value = MaybeUninit::<T>::zeroed();
-
-                    for i in 0..element.size {
-                        let byte = self.ram[offset + i as usize].get();
-                        let raw_pointer = value.as_mut_ptr() as *mut u8;
-                        *raw_pointer.offset(i as isize) = byte;
-                    }
-
+                    core::ptr::copy_nonoverlapping(
+                        src_raw_pointer,
+                        dst_raw_pointer,
+                        element.size as usize,
+                    );
                     return value.assume_init();
                 };
             } else {
@@ -74,13 +75,16 @@ impl<'a> KeyValueStore for RamKeyValueStore<'a> {
             if key == element.key {
                 assert!(mem::size_of::<T>() == element.size as usize, "Invalid size");
 
-                for i in 0..element.size {
-                    let byte = unsafe {
-                        let raw_pointer = value as *const T as *const u8;
-                        *raw_pointer.offset(i as isize)
-                    };
-                    self.ram[offset + i as usize].set(byte);
-                }
+                let src_raw_pointer = value as *const T as *const u8;
+                let dst_raw_pointer = self.ram[offset..].as_ptr() as *mut u8;
+
+                unsafe {
+                    core::ptr::copy_nonoverlapping(
+                        src_raw_pointer,
+                        dst_raw_pointer,
+                        element.size as usize,
+                    );
+                };
 
                 return;
             } else {
