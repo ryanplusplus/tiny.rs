@@ -30,7 +30,7 @@ pub struct RamKeyValueStore<'a> {
 impl<'a> RamKeyValueStore<'a> {
     pub fn new(ram: &'a mut [Cell<u8>], elements: &'a [RamKeyValueStoreElement]) -> Self {
         let required_size: usize = elements.iter().map(|x| x.size as usize).sum();
-        assert!(ram.len() == required_size, "RAM size doesn't match");
+        assert!(ram.len() == required_size, "Incorrect RAM size");
 
         Self { ram, elements }
     }
@@ -45,7 +45,7 @@ impl<'a> KeyValueStore for RamKeyValueStore<'a> {
                 assert!(mem::size_of::<T>() == element.size as usize, "Invalid size");
                 assert!(
                     <T>::can_deserialize_from(&self.ram[offset..]),
-                    "Invalid contents"
+                    "Unable to safely deserialize"
                 );
 
                 let mut value = MaybeUninit::<T>::zeroed();
