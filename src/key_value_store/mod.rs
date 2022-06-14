@@ -1,6 +1,11 @@
 use core::cell::Cell;
 
-// fixme this should probably go elsewhere
+pub trait KeyValueStore {
+    fn read<T: SafelyDeserializable + Sized>(&self, key: Key) -> T;
+    fn write<T: Sized>(&self, key: Key, value: &T);
+    fn size_of(&self, key: Key) -> Size;
+}
+
 pub trait SafelyDeserializable {
     fn can_deserialize_from(bytes: &[Cell<u8>]) -> bool;
 }
@@ -43,9 +48,3 @@ impl SafelyDeserializable for i32 {
 
 pub type Key = u16;
 pub type Size = u8;
-
-pub trait KeyValueStore {
-    fn read<T: SafelyDeserializable + Sized>(&self, key: Key) -> T;
-    fn write<T: Sized>(&self, key: Key, value: &T);
-    fn size_of(&self, key: Key) -> Size;
-}
