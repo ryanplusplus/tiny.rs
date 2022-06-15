@@ -10,11 +10,16 @@ pub trait KeyValueStore<'a> {
 
 pub trait SafelyDeserializable {
     fn can_deserialize_from(bytes: &[Cell<u8>]) -> bool;
+    fn size() -> u8;
 }
 
 impl SafelyDeserializable for u8 {
     fn can_deserialize_from(_bytes: &[Cell<u8>]) -> bool {
         true
+    }
+
+    fn size() -> u8 {
+        1
     }
 }
 
@@ -22,11 +27,19 @@ impl SafelyDeserializable for u16 {
     fn can_deserialize_from(_bytes: &[Cell<u8>]) -> bool {
         true
     }
+
+    fn size() -> u8 {
+        2
+    }
 }
 
 impl SafelyDeserializable for u32 {
     fn can_deserialize_from(_bytes: &[Cell<u8>]) -> bool {
         true
+    }
+
+    fn size() -> u8 {
+        4
     }
 }
 
@@ -34,17 +47,29 @@ impl SafelyDeserializable for i8 {
     fn can_deserialize_from(_bytes: &[Cell<u8>]) -> bool {
         true
     }
+
+    fn size() -> u8 {
+        1
+    }
 }
 
 impl SafelyDeserializable for i16 {
     fn can_deserialize_from(_bytes: &[Cell<u8>]) -> bool {
         true
     }
+
+    fn size() -> u8 {
+        2
+    }
 }
 
 impl SafelyDeserializable for i32 {
     fn can_deserialize_from(_bytes: &[Cell<u8>]) -> bool {
         true
+    }
+
+    fn size() -> u8 {
+        4
     }
 }
 

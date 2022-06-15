@@ -77,6 +77,10 @@ fn should_require_the_destination_type_to_be_safely_deserializable_when_reading(
         fn can_deserialize_from(_bytes: &[Cell<u8>]) -> bool {
             false
         }
+
+        fn size() -> u8 {
+            2
+        }
     }
 
     let mut ram: [Cell<u8>; 2] = Default::default();
