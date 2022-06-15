@@ -2,7 +2,7 @@ use super::Event;
 use core::cell::Cell;
 
 #[test]
-fn should_do_nothing_whne_published_with_no_subscribers() {
+fn should_do_nothing_when_published_with_no_subscribers() {
     let event: Event<u8> = Event::new();
     event.publish(&3);
 }
