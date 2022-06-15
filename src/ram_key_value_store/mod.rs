@@ -48,7 +48,10 @@ impl<'a> KeyValueStore<'a> for RamKeyValueStore<'a> {
 
         for element in self.elements.iter() {
             if key == element.key {
-                assert!(value.size() == element.size, "Invalid size");
+                assert!(
+                    mem::size_of_val(value) as u8 == element.size,
+                    "Invalid size"
+                );
                 assert!(
                     value.can_deserialize_from(&self.ram[offset..offset + element.size as usize]),
                     "Unable to safely deserialize"
@@ -79,7 +82,10 @@ impl<'a> KeyValueStore<'a> for RamKeyValueStore<'a> {
 
         for element in self.elements.iter() {
             if key == element.key {
-                assert!(value.size() == element.size, "Invalid size");
+                assert!(
+                    mem::size_of_val(value) as u8 == element.size,
+                    "Invalid size"
+                );
 
                 let value_slice = unsafe {
                     core::slice::from_raw_parts(

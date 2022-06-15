@@ -13,9 +13,9 @@ pub type Size = u8;
 
 pub trait Storable {
     fn can_deserialize_from(&self, bytes: &[Cell<u8>]) -> bool;
-    fn size(&self) -> u8 {
-        core::mem::size_of_val(self) as u8
-    }
+    // fn size(&self) -> u8 {
+    //     core::mem::size_of_val(self) as u8
+    // }
 }
 
 #[doc(hidden)]
