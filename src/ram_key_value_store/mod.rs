@@ -2,9 +2,9 @@ use super::event::Event;
 use super::key_value_store::Key;
 use super::key_value_store::KeyValueStore;
 use super::key_value_store::Size;
+use super::key_value_store::Storable;
 use core::cell::Cell;
 use core::mem;
-use core::mem::MaybeUninit;
 
 #[cfg(test)]
 mod test;
@@ -43,19 +43,18 @@ impl<'a> RamKeyValueStore<'a> {
 }
 
 impl<'a> KeyValueStore<'a> for RamKeyValueStore<'a> {
-    fn read<T: crate::key_value_store::SafelyDeserializable + Sized>(&self, key: Key) -> T {
+    fn read(&self, key: Key, value: &mut dyn Storable) {
         let mut offset = 0 as usize;
 
         for element in self.elements.iter() {
             if key == element.key {
-                assert!(mem::size_of::<T>() == element.size as usize, "Invalid size");
+                assert!(value.size() == element.size, "Invalid size");
                 assert!(
-                    <T>::can_deserialize_from(&self.ram[offset..]),
+                    value.can_deserialize_from(&self.ram[offset..offset + element.size as usize]),
                     "Unable to safely deserialize"
                 );
 
-                let mut value = MaybeUninit::<T>::zeroed();
-                let dst_raw_pointer = value.as_mut_ptr() as *mut u8;
+                let dst_raw_pointer = value as *mut dyn Storable as *mut u8;
                 let src_raw_pointer = self.ram[offset..].as_ptr() as *const u8;
 
                 unsafe {
@@ -64,8 +63,9 @@ impl<'a> KeyValueStore<'a> for RamKeyValueStore<'a> {
                         dst_raw_pointer,
                         element.size as usize,
                     );
-                    return value.assume_init();
                 };
+
+                return;
             } else {
                 offset += element.size as usize;
             }
@@ -74,16 +74,16 @@ impl<'a> KeyValueStore<'a> for RamKeyValueStore<'a> {
         panic!("Invalid key");
     }
 
-    fn write<T: Sized>(&self, key: Key, value: &T) {
+    fn write(&self, key: Key, value: &dyn Storable) {
         let mut offset = 0 as usize;
 
         for element in self.elements.iter() {
             if key == element.key {
-                assert!(mem::size_of::<T>() == element.size as usize, "Invalid size");
+                assert!(value.size() == element.size, "Invalid size");
 
                 let value_slice = unsafe {
                     core::slice::from_raw_parts(
-                        value as *const T as *const Cell<u8>,
+                        value as *const dyn Storable as *const Cell<u8>,
                         element.size as usize,
                     )
                 };
@@ -92,7 +92,7 @@ impl<'a> KeyValueStore<'a> for RamKeyValueStore<'a> {
                     self.on_change_event.publish(&element.key);
                 }
 
-                let src_raw_pointer = value as *const T as *const u8;
+                let src_raw_pointer = value as *const dyn Storable as *const u8;
                 let dst_raw_pointer = self.ram[offset..].as_ptr() as *mut u8;
 
                 unsafe {

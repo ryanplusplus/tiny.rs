@@ -1,9 +1,7 @@
 extern crate std;
+use super::Event;
+use super::{Key, KeyValueStore, Storable};
 use super::{RamKeyValueStore, RamKeyValueStoreElement};
-use crate::{
-    event::Event,
-    key_value_store::{Key, KeyValueStore, SafelyDeserializable},
-};
 use core::cell::Cell;
 
 #[test]
@@ -24,7 +22,8 @@ fn should_require_the_correct_size_when_reading() {
     let elements = [RamKeyValueStoreElement::new::<i16>(4)];
     let kvs = RamKeyValueStore::new(&mut ram, &elements);
 
-    kvs.read::<u32>(4);
+    let mut value = 0u32;
+    kvs.read(4, &mut value);
 }
 
 #[test]
@@ -34,7 +33,7 @@ fn should_require_the_correct_size_when_writing() {
     let elements = [RamKeyValueStoreElement::new::<i16>(4)];
     let kvs = RamKeyValueStore::new(&mut ram, &elements);
 
-    kvs.write::<u32>(4, &0x1234);
+    kvs.write(4, &0x1234u32);
 }
 
 #[test]
@@ -59,11 +58,16 @@ fn should_allow_values_to_be_read_and_written() {
     ];
     let kvs = RamKeyValueStore::new(&mut ram, &elements);
 
-    kvs.write::<i16>(4, &-1234);
-    kvs.write::<u32>(7, &0x87654321);
+    kvs.write(4, &-1234i16);
+    kvs.write(7, &0x87654321u32);
 
-    assert_eq!(-1234, kvs.read::<i16>(4));
-    assert_eq!(0x87654321, kvs.read::<u32>(7));
+    let mut value = 0i16;
+    kvs.read(4, &mut value);
+    assert_eq!(-1234i16, value);
+
+    let mut value = 0u32;
+    kvs.read(7, &mut value);
+    assert_eq!(0x87654321u32, value);
 }
 
 #[test]
@@ -73,12 +77,12 @@ fn should_require_the_destination_type_to_be_safely_deserializable_when_reading(
         _value: u16,
     }
 
-    impl SafelyDeserializable for SomeType {
-        fn can_deserialize_from(_bytes: &[Cell<u8>]) -> bool {
+    impl Storable for SomeType {
+        fn can_deserialize_from(&self, _bytes: &[Cell<u8>]) -> bool {
             false
         }
 
-        fn size() -> u8 {
+        fn size(&self) -> u8 {
             2
         }
     }
@@ -87,7 +91,7 @@ fn should_require_the_destination_type_to_be_safely_deserializable_when_reading(
     let elements = [RamKeyValueStoreElement::new::<SomeType>(4)];
     let kvs = RamKeyValueStore::new(&mut ram, &elements);
 
-    kvs.read::<SomeType>(4);
+    kvs.read(4, &mut SomeType { _value: 0 });
 }
 
 #[test]
@@ -105,7 +109,7 @@ fn should_publish_on_change_event_when_new_data_is_written() {
     });
 
     kvs.on_change().subscribe(&subscription);
-    kvs.write::<u16>(4, &0x1234);
+    kvs.write(4, &0x1234u16);
 
     assert_eq!(Some(4), publication_data.get());
 }
@@ -124,9 +128,9 @@ fn should_not_publish_on_change_event_when_the_same_data_is_written() {
         data.set(Some(*key));
     });
 
-    kvs.write::<u16>(4, &0x1234);
+    kvs.write(4, &0x1234u16);
     kvs.on_change().subscribe(&subscription);
-    kvs.write::<u16>(4, &0x1234);
+    kvs.write(4, &0x1234u16);
 
     assert_eq!(None, publication_data.get());
 }
