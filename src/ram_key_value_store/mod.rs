@@ -88,7 +88,7 @@ impl<'a> KeyValueStore<'a> for RamKeyValueStore<'a> {
                     )
                 };
 
-                if value_slice != &self.ram[offset..] {
+                if value_slice != &self.ram[offset..offset + element.size as usize] {
                     self.on_change_event.publish(&element.key);
                 }
 

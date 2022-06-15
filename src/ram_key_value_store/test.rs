@@ -88,8 +88,11 @@ fn should_require_the_destination_type_to_be_safely_deserializable_when_reading(
 
 #[test]
 fn should_publish_on_change_event_when_new_data_is_written() {
-    let mut ram: [Cell<u8>; 2] = Default::default();
-    let elements = [RamKeyValueStoreElement::new::<u16>(4)];
+    let mut ram: [Cell<u8>; 4] = Default::default();
+    let elements = [
+        RamKeyValueStoreElement::new::<u16>(4),
+        RamKeyValueStoreElement::new::<u16>(7),
+    ];
     let kvs = RamKeyValueStore::new(&mut ram, &elements);
 
     let publication_data: Cell<Option<Key>> = Cell::new(None);
@@ -105,8 +108,11 @@ fn should_publish_on_change_event_when_new_data_is_written() {
 
 #[test]
 fn should_not_publish_on_change_event_when_the_same_data_is_written() {
-    let mut ram: [Cell<u8>; 2] = Default::default();
-    let elements = [RamKeyValueStoreElement::new::<u16>(4)];
+    let mut ram: [Cell<u8>; 4] = Default::default();
+    let elements = [
+        RamKeyValueStoreElement::new::<u16>(4),
+        RamKeyValueStoreElement::new::<u16>(7),
+    ];
     let kvs = RamKeyValueStore::new(&mut ram, &elements);
 
     let publication_data: Cell<Option<Key>> = Cell::new(None);
