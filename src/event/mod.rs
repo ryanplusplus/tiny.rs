@@ -23,16 +23,16 @@ impl<'a, Arg> Event<'a, Arg> {
         EventSubscription::new(EventSubscriptionState::new(context, f))
     }
 
-    pub fn subscribe(&mut self, subscription: &'a EventSubscription<'a, Arg>) {
+    pub fn subscribe(&self, subscription: &'a EventSubscription<'a, Arg>) {
         self.unsubscribe(subscription);
         self.subscribers.push_front(subscription);
     }
 
-    pub fn unsubscribe(&mut self, subscription: &'a EventSubscription<'a, Arg>) {
+    pub fn unsubscribe(&self, subscription: &'a EventSubscription<'a, Arg>) {
         self.subscribers.remove(subscription);
     }
 
-    pub fn publish(&mut self, args: &Arg) {
+    pub fn publish(&self, args: &Arg) {
         for subscriber in self.subscribers.iter() {
             subscriber.call(args);
         }
