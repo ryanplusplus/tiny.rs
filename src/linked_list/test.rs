@@ -1,4 +1,3 @@
-extern crate std;
 use super::{LinkedList, LinkedListNode};
 use core::ops::Deref;
 

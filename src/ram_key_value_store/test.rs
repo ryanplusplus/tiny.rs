@@ -1,4 +1,3 @@
-extern crate std;
 use super::Event;
 use super::{Key, KeyValueStore, Storable};
 use super::{RamKeyValueStore, RamKeyValueStoreElement};
